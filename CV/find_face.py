@@ -152,7 +152,7 @@ all_length = len(imgpath_list)
 
 print("Find picture:"+" "+str(all_length))
 print('Begining......')
-
+print('Finished/Find Face  % Bar  Usedtime/Totaltime')
 
 starttime = datetime.datetime.now()
 face_cnt=0
@@ -165,11 +165,11 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=WORKERS) as executor:
         if i%100==0:
             endtime = datetime.datetime.now()
             used_time = (endtime-starttime).seconds
-            percent = round(100*i/all_length,2)
+            percent = round(100*i/all_length,1)
 
-            print('\r','','Ok:'+str(i),'Face:'+str(face_cnt)+' ',
+            print('\r','',str(i)+'/'+str(face_cnt)+' ',
                 str(percent)+'%'+get_bar(percent,30),
-                ' Used/All:'+str(int(used_time))+'s/'+str(int(used_time/i*all_length))+'s',end= " ")
+                ' '+str(int(used_time))+'s/'+str(int(used_time/i*all_length))+'s',end= " ")
             #starttime_show = datetime.datetime.now()
 
     print('\nFinished!','Finall find face:',face_cnt,' Cost time:',(datetime.datetime.now()-starttime).seconds,'s')
