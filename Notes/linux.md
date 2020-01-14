@@ -41,6 +41,7 @@ cp -rf dir1 dir #复制文件夹dir1到dir2，不显示进度
 ```
 * deb
 ```bash
+sudo apt-get install -f #解决依赖关系
 dpkg -i <package.deb> #安装一个 Debian 软件包，如你手动下载的文件。
 dpkg -c <package.deb> #列出 <package.deb> 的内容。
 dpkg -I <package.deb> #从 <package.deb> 中提取包裹信息。

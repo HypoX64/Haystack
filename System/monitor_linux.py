@@ -138,11 +138,11 @@ def get_disk_use():
     disk_str = disk_str.split('\n')
     disk_infos = []
     for line in disk_str:
-        if 'G' in line[:24]:
+        if 'G' in line[:24] and 'tmpfs' not in line:
             line = line.split()
             if float(line[1].replace('G',''))>20:
                 disk_infos.append(line)
-        elif 'T' in line:
+        elif 'T' in line and 'tmpfs' not in line:
             line = line.split()
             disk_infos.append(line)
     return disk_infos
@@ -207,7 +207,7 @@ def main():
 
         #gpu
         for i in range(len(gpus)):
-            print(('\n'+'Gpu'+'{0:d}'+': '+gpus[i]+'   Temp: {1:.1f}C | Power: {2:d}w/{3:d}w | Mem: {4:d}MB/{5:d}MB | Fan: {6:d}%').format(
+            print(('\n'+'Gpu'+'{0:d}'+': '+gpus[i].replace('GeForce','')+'   Temp: {1:.1f}C | Power: {2:d}w/{3:d}w | Mem: {4:d}MB/{5:d}MB | Fan: {6:d}%').format(
                 i,gpu_infoss[i][0][1],gpu_infoss[i][0][2],gpu_infoss[i][0][3],
                 gpu_infoss[i][0][4],gpu_infoss[i][0][5],gpu_infoss[i][0][0]))
             print(('Util:{0:.1f}% '+util_used_bars[i]+'   Mem:{1:.1f}% '+gpu_mem_bars[i]).format(

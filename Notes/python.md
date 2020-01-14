@@ -10,7 +10,7 @@ if __name__ == '__main__':
 ```
 ### for
 ```python
-for i,word in enumerate(wordlist,0):
+for i,file in enumerate(files,0):
 ```
 ### read and write txt
 * read
