@@ -1,4 +1,4 @@
-[toc]
+[TOC]
 # Python
 ## base
 ### main
@@ -265,7 +265,23 @@ cv2.IMREAD_UNCHANGED：加载图像，包括alpha通道
 您可以简单地分别传递整数1,0或-1，而不是这三个标志。
 '''
 ```
+### resize
+```python
+#CV2.INTER_NEAREST      最邻近插值点法
+#CV2.NTER_LINEAR         双线性插值法
+#CV2.INTER_AREA             邻域像素再取样插补
+#CV2.INTER_CUBIC           双立方插补，4*4大小的补点
+#CV2.INTER_LANCZOS4         8x8像素邻域的Lanczos插值
+#當我們縮小影像時，使用CV_INTER_AREA會有比較好的效果，當我們放大影像，CV_INTER_CUBIC會有最好的效果，但是計算花費時間較多，CV_INTER_LINEAR能在影像品質和花費時間上取得不錯的平衡。 CV_INTER_LANCZOS4    Lanczos插补，8*8大小的补点
+
+```
+
+
+
+
+
 ### imshow
+
 ```python
 cv2.imshow('image',img)
 '''

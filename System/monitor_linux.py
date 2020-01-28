@@ -38,7 +38,12 @@ def get_cpu_freq():
 
 # Cpu freq
 def get_cpu_temp():
-    temp_str = os.popen('cat /sys/class/hwmon/hwmon0/device/hwmon/hwmon0/temp1_input').read()
+    if os.path.isfile('/sys/class/hwmon/hwmon0/device/hwmon/hwmon0/temp1_input'):
+        temp_str = os.popen('cat /sys/class/hwmon/hwmon0/device/hwmon/hwmon0/temp1_input').read()
+    elif os.path.isfile('/sys/class/hwmon/hwmon0/device/hwmon0/temp1_input'):
+        temp_str = os.popen('cat /sys/class/hwmon/hwmon0/device/hwmon0/temp1_input').read()
+    else:
+        return -1
     return (float(temp_str)/1000)
 
 # Mem
@@ -71,9 +76,10 @@ def get_swap_use():
 ###############################################################
 gpus_str = os.popen('nvidia-smi -L').read()
 gpus =[]
-while gpus_str.find('\n') != -1:
-    gpus.append(gpus_str[gpus_str.find(':')+2:gpus_str.find('(')-1])
-    gpus_str=gpus_str[gpus_str.find('\n')+1:]
+if 'communicate with the NVIDIA driver' not in gpus_str:
+    while gpus_str.find('\n') != -1:
+        gpus.append(gpus_str[gpus_str.find(':')+2:gpus_str.find('(')-1])
+        gpus_str=gpus_str[gpus_str.find('\n')+1:]
 
 def get_gpu_use():
     
@@ -85,7 +91,10 @@ def get_gpu_use():
         infos_str = infos_str[:infos_str.find('\n')+1]
         infos_str = infos_str.split()
         #['|', '50%', '42C', 'P0', '19W', '/', '75W', '|', '929MiB', '/', '5050MiB', '|', '14%', 'Default', '|']
-        fan = int(infos_str[1].replace('%',''))        # %
+        if infos_str[1].replace('%','') == 'N/A':
+            fan = -1
+        else:
+            fan = int(infos_str[1].replace('%',''))        # %
         temp = int(infos_str[2].replace('C',''))       # C
         if infos_str[4] == 'N/A':
             power_used = -1

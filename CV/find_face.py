@@ -40,14 +40,14 @@ def lapulase(resImg):
     score = res.var()
     return score
 
-def resize(img,size):
+def resize(img,size,interpolation=cv2.INTER_LINEAR):
     h, w = img.shape[:2]
-    if min(h, w) ==size:
+    if np.min((w,h)) ==size:
         return img
     if w >= h:
-        res = cv2.resize(img,(int(size*w/h), size),interpolation=cv2.INTER_LANCZOS4)
+        res = cv2.resize(img,(int(size*w/h), size),interpolation=interpolation)
     else:
-        res = cv2.resize(img,(size, int(size*h/w)),interpolation=cv2.INTER_LANCZOS4)
+        res = cv2.resize(img,(size, int(size*h/w)),interpolation=interpolation)
     return res
 
 def Traversal(filedir):
@@ -77,44 +77,56 @@ def find_save_resize_face(input_path):
     try:
 
         filename,extension = os.path.splitext(os.path.split(input_path)[1])
-        # image = face_recognition.load_image_file(input_path)
-        image = cv2.imread(input_path)
-        h,w = image.shape[:2]
-        #print(image.dtype)
-        # Find all the faces in the image and print
-        face_locations = face_recognition.face_locations(image)
-        # print("found {} face(s) in this photograph.".format(len(face_locations)))
         
         origin_image = cv2.imread(input_path)
+        h,w = origin_image.shape[:2]
         mask = np.zeros(origin_image.shape[:2],dtype = "uint8")
+        rat = min(origin_image.shape[:2])/LOADSIZE
+        image = resize(origin_image, LOADSIZE,interpolation = cv2.INTER_AREA)
 
+        face_locations = face_recognition.face_locations(image,number_of_times_to_upsample=1,model=MODEL)
+               
         count=0
+        mask_count = 0
         for face_location in face_locations:
-            # Print the location of each face in this image
+            
             top, right, bottom, left = face_location
-            #print("A face is located at pixel location Top: {}, Left: {}, Bottom: {}, Right: {}".format(top, left, bottom, right))
-            # You can access the actual face itself like this:
+            top, right, bottom, left = int(top*rat), int(right*rat), int(bottom*rat), int(left*rat)
+            # EX
             if IS_random_EXTEND:
                 ex=int(((EXTEND-1+0.2*random.random())*(bottom-top))/2)
             else:
                 ex=int(((EXTEND-1)*(bottom-top))/2)
-            # ex_face=int((1*(bottom-top))/2)
+
             if ((bottom-top)>MINSIZE) and 0.95<abs((bottom-top)/(left-right))<1.05 and (top-ex)>0 and (bottom+ex)<h and (left-ex)>0 and (right+ex)<w:
                 face = origin_image[top-ex:bottom+ex, left-ex:right+ex]
                 face = cv2.resize(face, (512,512),interpolation=cv2.INTER_LANCZOS4)
-                # cv2.imwrite(os.path.join(outdir_face,outname+filename+'_'+str(count)+'.jpg'),face)
                 if lapulase(face)>Del_Blur_Score:
-                    #print(os.path.join(outdir_face,random_str()+'.jpg'))
                     cv2.imwrite(os.path.join(outdir_face,random_str()+'.jpg'),face)
                     count = count+1
-            #mask = cv2.rectangle(mask,(left-ex,top-ex),(right+ex,bottom+ex),255,-1)  
-        #mask         
-        # if count > 0:
-        #     mask = resize(mask,256)
-        #     origin_image = resize(origin_image,1024)
-        #     cv2.imwrite(os.path.join(outdir_ori,outname+filename+'.jpg'),origin_image)
-        #     cv2.imwrite(os.path.join(outdir_mask,outname+filename+'.png'),mask)
-        # print(output_path)
+            if SAVE_MASK:
+                try:
+                    if MASK_TYPE=='contour':
+                        _ex = int((bottom - top)*0.5)
+                        face_get_landmark = origin_image[top-_ex:bottom+_ex, left-_ex:right+_ex]
+                        face_landmark = face_recognition.face_landmarks(face_get_landmark)[0]
+                        face_point = []
+                        face_point = face_point+face_landmark['left_eyebrow']+face_landmark['right_eyebrow']+face_landmark['chin'][::-1]
+                        face_point = np.array(face_point) + np.array([left-_ex,top-_ex])
+                        face_point[:10] = face_point[:10] - np.array([0,int((bottom-top)*HIGH_MASK)])
+                        mask = cv2.fillPoly(mask,[face_point],(255))
+                    elif MASK_TYPE=='rect':
+                        _ex = int((bottom - top)*0.05)
+                        mask = cv2.rectangle(mask,(int(left-_ex*0.5),top-_ex),(int(right+_ex*0.5),bottom+_ex),(255),-1)
+                    mask_count += 1
+                except Exception as e:
+                    pass
+        if SAVE_MASK:     
+            if count == mask_count and count > 0:
+                mask = resize(mask,512,interpolation = cv2.INTER_AREA)
+                origin_image = resize(origin_image,512,interpolation = cv2.INTER_AREA)
+                cv2.imwrite(os.path.join(outdir_ori,outname+filename+'.jpg'),origin_image)
+                cv2.imwrite(os.path.join(outdir_mask,outname+filename+'.png'),mask)
         return count
 
     except Exception as e:
@@ -129,10 +141,13 @@ WORKERS = int((input("cpu_workers(defult=4):").strip()).replace("'",""))
 
 # EXTEND=1.4
 EXTEND = 1.6
-Del_Blur_Score = 50
+Del_Blur_Score = 20  # normal-> 20 | clear -> recommed 50
 IS_random_EXTEND = False
-# WORKERS = 4
-# MINSIZE = 256
+MODEL = 'cnn' # 'hog' | 'cnn'
+SAVE_MASK = True
+MASK_TYPE = 'rect' # rect | contour
+HIGH_MASK = 0.2 # more vertical mask
+LOADSIZE = 512 # load to this size and process
 
 outdir='./output/'+outname
 

@@ -1,4 +1,15 @@
-[toc]
+[TOC]
+### 安装显卡驱动
+```bash
+#卸载旧的驱动
+sudo apt-get purge nvidia*
+sudo apt-get autoremove #这个命令有时候不用也可以
+#
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt update
+ubuntu-drivers devices
+sudo apt install nvidia-430
+```
 ### 挂载U盘
 ```bash
 root@lthpc:/home/hypo# fdisk -l
@@ -8,11 +19,28 @@ Device     Start        End    Sectors  Size Type
 root@lthpc:/home/hypo# cd /media  
 root@lthpc:/media# mkdir usb
 root@lthpc:/media# mount -t ntfs-3g /dev/sdc1 /media/usb 
+
+#卸载挂载点
+$ umount /dev/hda2
+$ umount /usr
+#参数可以是设备文件或安装点
 ```
 ### shell 中运行基本应用
 ```bash
 nautilus #文件管理器
 firefox #火狐浏览器
+```
+### 批量杀死应用
+```bash
+ps aux|grep python|grep -v grep|cut -c 9-15|xargs kill -15
+# 管道符“|”用来隔开两个命令，管道符左边命令的输出会作为管道符右边命令的输入。下面说说用管道符联接起来的 
+#几个命令： 
+#“ps aux”是linux 里查看所有进程的命令。这时检索出的进程将作为下一条命令“grep python”的输入。 
+#“grep python”的输出结果是，所有含有关键字“python”的进程，这是python程序
+#“grep -v grep”是在列出的进程中去除含有关键字“grep”的进程。 
+#“cut -c 9-15”是截取输入行的第9个字符到第15个字符，而这正好是进程号PID。 
+#“xargs kill -15”中的xargs命令是用来把前面命令的输出结果（PID）作为“kill -15”命令的参数，并执行该令。 
+#“kill -15”会正常退出指定进程，-9强行杀掉
 ```
 ### 常用系统命令
 * 删除文件
@@ -51,7 +79,7 @@ dpkg -L <package> #列出 <package> 安装的所有文件清单。同时请看 d
 dpkg -s <package> #显示已安装包裹的信息。同时请看 apt-cache 显示 Debian 存档中的包裹信息，以及 dpkg -I 来显示从一个 .deb 文件中提取的包裹信息。
 dpkg-reconfigure <package> #重新配制一个已经安装的包裹，如果它使用的是 debconf (debconf 为包裹安装提供了一个统一的配制界面)。
 ```
-* 调整CPU性能模式
+### 调整CPU性能模式
 ```bash
 sudo apt-get install cpufrequtils
 cpufreq-info
@@ -59,6 +87,16 @@ sudo cpufreq-set -g performance
 ##修改默认
 sudo apt-get install sysfsutils
 sudo gedit  /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+```
+### 添加或禁用开机启动项
+```bash
+#禁用开机启动项
+$ systemctl list-unit-files --type=service|grep enabled #查看开机启动的服务
+$ sudo systemctl disable apache2.service #禁用掉该服务
+#添加开机启动项
+$ systemctl list-unit-files --type=service|grep team
+teamviewerd.service                        enabled    
+$ sudo systemctl enable teamviewerd.service
 ```
 ### 压缩解压
 ```bash
@@ -128,6 +166,7 @@ firefox &
 ```bash
 #压缩+解压流传输 把本地的文件复制到远程主机上
 tar -c './dir' |pigz |ssh hypo@172.31.73.116 "gzip -d|tar -xC /home/hypo/MyProject"
+tar -c './DeepMosaics' |pigz |ssh hypo@172.30.194.156 "gzip -d|tar -xC /media/hypo/Project/MyProject/DeepMosaics"
 
 #把远程的文件复制到本地
 scp root@www.test.com:/val/test/test.tar.gz /val/test/test.tar.gz
