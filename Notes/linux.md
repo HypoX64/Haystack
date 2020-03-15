@@ -25,6 +25,27 @@ $ umount /dev/hda2
 $ umount /usr
 #参数可以是设备文件或安装点
 ```
+### linux应用设置
+* 百度盘
+```bash
+# 无法登录
+rm -rf  ~/baidunetdisk #这个蛇皮的bug不知道啥时候才能修复
+```
+* goldendict
+```bash
+# 安装
+sudo apt install goldendict
+sudo apt install goldendict gawk
+# 添加谷歌翻译
+git clone https://github.com/soimort/translate-shell
+cd translate-shell/
+make
+sudo make install
+```
+打开GoldenDict，【编辑】-【词典】-【词典来源】-【程序】，点击【添加】，勾上【已启用】，填写【类型】Html 和【名称】Google，在【命令行】中输入
+```
+trans -e google -s auto -t zh-CN -show-original y -show-original-phonetics n -show-translation y -no-ansi -show-translation-phonetics n -show-prompt-message n -show-languages y -show-original-dictionary n -show-dictionary n -show-alternatives n ''%GDWORD%''
+```
 ### shell 中运行基本应用
 ```bash
 nautilus #文件管理器

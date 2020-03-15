@@ -38,7 +38,9 @@ def get_cpu_freq():
 
 # Cpu freq
 def get_cpu_temp():
-    if os.path.isfile('/sys/class/hwmon/hwmon0/device/hwmon/hwmon0/temp1_input'):
+    if os.path.isfile('/sys/class/thermal/thermal_zone0/temp'):
+        temp_str = os.popen('cat /sys/class/thermal/thermal_zone0/temp').read()
+    elif os.path.isfile('/sys/class/hwmon/hwmon0/device/hwmon/hwmon0/temp1_input'):
         temp_str = os.popen('cat /sys/class/hwmon/hwmon0/device/hwmon/hwmon0/temp1_input').read()
     elif os.path.isfile('/sys/class/hwmon/hwmon0/device/hwmon0/temp1_input'):
         temp_str = os.popen('cat /sys/class/hwmon/hwmon0/device/hwmon0/temp1_input').read()

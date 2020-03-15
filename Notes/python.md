@@ -12,6 +12,20 @@ if __name__ == '__main__':
 ```python
 for i,file in enumerate(files,0):
 ```
+### sort
+```python
+'''
+对列表进行排序并相应地更改另一个列表
+我有两个列表：一个包含一组x点，另一个包含y点。Python以某种方式管理x点，或用户可以。我需要按照从最低到最高的顺序对它们进行排序，并且移动y点以跟随它们的x个对应点。
+'''
+>>> xs = [5, 2, 1, 4, 6, 3]
+>>> ys = [1, 2, 3, 4, 5, 6]
+>>> xs, ys = zip(*sorted(zip(xs, ys)))
+>>> xs
+(1, 2, 3, 4, 5, 6)
+>>> ys
+(3, 2, 6, 4, 1, 5)
+```
 ### read and write txt
 * read
 ```python
@@ -230,7 +244,7 @@ args , _ = parse.parse_known_args(sys.argv[1:])
 SAVEDIR = args.savedir
 ```
 ## numpy
-* zeros
+* zeros/ones
 ```python
 np.zeros(shape, dtype=float, order='C')
 '''
@@ -246,7 +260,21 @@ u,unicode,u24
 ```python
 a.tolist()
 ```
+* .dtype  .shape  .astype  .reshape
+```python
+a.dtype  #查看数据类型
+a.shape  #查看形状
+a.astype  #修改数据类型
+a.reshape  #修改形状
+```
+*  根据某一列进行排序
+```python
+#按照数组的第一列进行排序
+data = data[np.argsort(data[:,0])]
+```
+
 ## pyinstaller
+
 ```bash
 pyinstaller test.py-F
 ```

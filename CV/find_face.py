@@ -143,11 +143,11 @@ WORKERS = int((input("cpu_workers(defult=4):").strip()).replace("'",""))
 EXTEND = 1.6
 Del_Blur_Score = 20  # normal-> 20 | clear -> recommed 50
 IS_random_EXTEND = False
-MODEL = 'cnn' # 'hog' | 'cnn'
+MODEL = 'hog' # 'hog' | 'cnn'
 SAVE_MASK = True
 MASK_TYPE = 'rect' # rect | contour
 HIGH_MASK = 0.2 # more vertical mask
-LOADSIZE = 512 # load to this size and process
+LOADSIZE = 1024 # load to this size and process
 
 outdir='./output/'+outname
 
