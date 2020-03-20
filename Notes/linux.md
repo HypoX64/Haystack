@@ -70,8 +70,9 @@ rm -rf yourdir
 #-r 就是向下递归，不管有多少级目录，一并删除
 #-f 就是直接强行删除，不作任何提示的意思
 ```
-* cp
+* cp  mv
 ```bash
+# cp复制  　mv剪切
 cp [options] <source file or directory> <target file or directory>
 # or
 cp [options] source1 source2 source3 …. directory

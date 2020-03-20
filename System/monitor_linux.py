@@ -86,9 +86,9 @@ if 'communicate with the NVIDIA driver' not in gpus_str:
 def get_gpu_use():
     
     gpu_infos = []
-    for gpu in gpus:
+    for i in range(len(gpus)):
         infos_str = os.popen('nvidia-smi').read()
-        infos_str = infos_str[infos_str.find(gpu):]
+        infos_str = infos_str[infos_str.find(str(i)+'  '+gpus[i]):]
         infos_str = infos_str[infos_str.find('\n')+1:]
         infos_str = infos_str[:infos_str.find('\n')+1]
         infos_str = infos_str.split()
@@ -192,12 +192,13 @@ def main():
         swap_used_bar = get_bar(swap_percent)
 
         #gpu
-        gpu_infoss = [];util_used_bars=[];gpu_mem_bars=[]
+        util_used_bars=[];gpu_mem_bars=[]
+        gpu_infoss = get_gpu_use()
+        print(gpu_infoss)
         for i in range(len(gpus)):
-            gpu_infos = get_gpu_use()
-            gpu_infoss.append(gpu_infos)
-            util_used_bars.append(get_bar(gpu_infos[0][6]))
-            gpu_mem_bars.append(get_bar(100*gpu_infos[0][4]/gpu_infos[0][5]))
+            gpu_infos = gpu_infoss[i]
+            util_used_bars.append(get_bar(gpu_infoss[i][6]))
+            gpu_mem_bars.append(get_bar(100*gpu_infoss[i][4]/gpu_infoss[i][5]))
 
         #net
         net_infos = get_net_use()
@@ -219,15 +220,15 @@ def main():
         #gpu
         for i in range(len(gpus)):
             print(('\n'+'Gpu'+'{0:d}'+': '+gpus[i].replace('GeForce','')+'   Temp: {1:.1f}C | Power: {2:d}w/{3:d}w | Mem: {4:d}MB/{5:d}MB | Fan: {6:d}%').format(
-                i,gpu_infoss[i][0][1],gpu_infoss[i][0][2],gpu_infoss[i][0][3],
-                gpu_infoss[i][0][4],gpu_infoss[i][0][5],gpu_infoss[i][0][0]))
+                i,gpu_infoss[i][1],gpu_infoss[i][2],gpu_infoss[i][3],
+                gpu_infoss[i][4],gpu_infoss[i][5],gpu_infoss[i][0]))
             print(('Util:{0:.1f}% '+util_used_bars[i]+'   Mem:{1:.1f}% '+gpu_mem_bars[i]).format(
-                gpu_infoss[i][0][6],100*gpu_infoss[i][0][4]/gpu_infoss[i][0][5]))
+                gpu_infoss[i][6],100*gpu_infoss[i][4]/gpu_infoss[i][5]))
 
         #net
         print(('\nNetwork    ↑ all:{0:.1f}GB ↓ all:{1:.1f}GB     ↑ :{2:.1f}Kb/s ↓ :{3:.1f}Kb/s').format(
             net_infos[1]/1024/1024,net_infos[0]/1024/1024,net_infos[3],net_infos[2]))
-        
+
         #disk
         print('\nFilesystem           Mounted on           Used/Total           Used%')
         for disk_info in disk_infos:
@@ -238,18 +239,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-# print(disk_infos)
-# disk_str = tmp
-# tmp = []
-# for line in disk_str:
-#     info = 
-#         tmp.append(line)
-# print(disk_str)
-
-
-# total = 
-
-# cpu_used = top_str[top_str.find('%Cpu(s):'):top_str.find('%Cpu(s):')+5]
-# print(cpu_used)
-# out_string = os.popen('nvidia-smi').read()
-# print(out_string)

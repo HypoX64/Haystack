@@ -133,3 +133,4 @@ dmypy.json
 __pycache__/
 tmp/
 output/
+/sftp-config.json
