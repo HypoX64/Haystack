@@ -1,13 +1,28 @@
 [TOC]
+### 用户
+* 添加用户
+```bash
+sudo adduser hypo
+```
+* 更改密码
+```bash
+sudo passwd hypo
+```
+* 更改用户权限
+```bash
+cd /etc
+sudo vim sudosers
+hypo ALL=(ALL:ALL)  ALL
+```
+* 删除用户
+```bash
+sudo userdel -r hypo
+```
 ### 安装显卡驱动
 ```bash
-#卸载旧的驱动
-sudo apt-get purge nvidia*
-sudo apt-get autoremove #这个命令有时候不用也可以
-#
 sudo add-apt-repository ppa:graphics-drivers/ppa
 sudo apt update
-ubuntu-drivers devices
+ubuntu-drivers devices#选择推荐的驱动版本
 sudo apt install nvidia-430
 ```
 ### 挂载U盘
@@ -26,11 +41,6 @@ $ umount /usr
 #参数可以是设备文件或安装点
 ```
 ### linux应用设置
-* 百度盘
-```bash
-# 无法登录
-rm -rf  ~/baidunetdisk #这个蛇皮的bug不知道啥时候才能修复
-```
 * goldendict
 ```bash
 # 安装
@@ -50,6 +60,7 @@ trans -e google -s auto -t zh-CN -show-original y -show-original-phonetics n -sh
 ```bash
 nautilus #文件管理器
 firefox #火狐浏览器
+gedit #文本编辑器
 ```
 ### 批量杀死应用
 ```bash
@@ -122,15 +133,27 @@ $ sudo systemctl enable teamviewerd.service
 ```
 ### 压缩解压
 ```bash
+#.tar   .tar.xz
 tar xvf filename.tar #.tar 解包 
 tar cvf filename.tar dirname #.tar 打包 
+tar cvzf - filedir | split -d -b 50m - filename #.tar 分卷打包 
+cat x* > myzip.tar.gz #.tar 分卷解包
+tar xzvf myzip.tar.gz
+
+#.gz
 gunzip filename.gz #.gz 解压1 
 gzip -d filename.gz #.gz 解压2 
 gzip filename #.gz 压缩 
+
+#.tar.gz 
 tar zxvf filename.tar.gz #.tar.gz 和 .tgz 解压 
 tar zcvf filename.tar.gz dirname #.tar.gz 和 .tgz 压缩 
-unzip filename.zip #.zip 解压 
+
+#zip
+unzip filename.zip  -d filedir #.zip 解压 
 zip filename.zip dirname #.zip 压缩 
+
+#rar
 rar x filename.rar #.rar 解压 
 rar a filename.rar dirname #.rar 压缩 
 
@@ -141,6 +164,18 @@ tar cvf - test.txt | pigz > test.tar.gz
 #解压
 tar -I pigz -xvf /path/to/archive.tar.gz -C /where/to/unpack/it/
 ```
+### rdesktop(Windows远程桌面)
+```
+rdesktop -u Administrator -p password ip -g 1280x720
+```
+### vim
+*  模式
+1.vim 一打开，就会进入所谓的普通模式(Normal)。在这个模式下，大家输入的所有内容都会被 vim 解析成相应的指令并执行。<br>
+2.如果要输入内容，必须键入字母 i 来命令 vim 切换到所谓的插入模式(Insert)。在插入模式下，大家就可以像在其他普通编辑器下那样输入文字了。输入完毕，需要通过按Esc返回普通模式。<br>
+* 撤销重做
+撤销上次操作用 u，反撤销用 ctrl+r
+* 保存退出
+保存退出都要在命令模式下完成。保存用 :w path/to.txt，退出用 :q。如果是编辑已经存在的文件可以直接用 :wq 退出。
 ### ssh
 * install
 ```bash
@@ -197,4 +232,48 @@ scp /val/test.tar.gz root@www.test.com:/val/test.tar.gz
 #把远程的目录复制到本地
 scp -r root@www.test.com:/val/test/ /val/test/
 
+```
+### 常见系统故障
+#### 百度盘 无法登录
+```bash
+rm -rf  ~/baidunetdisk #这个蛇皮的bug不知道啥时候才能修复
+```
+#### nvidia-smi command not found显卡驱动故障
+```bash
+sudo apt-get purge nvidia*
+sudo apt-get autoremove 
+
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt update
+ubuntu-drivers devices
+sudo apt install nvidia-430
+```
+#### ERROR：gzip: stdout: No space left on device(boot空间不足)
+内核安装过多导致的空间不足
+```bash
+#查看boot占用情况
+df 
+#查看当前内核版本
+uname -r 
+#查看已安装内核版本
+cd /boot
+ls
+# 删除多余的内核
+sudo apt autoremove linux-image-4.4.0-57-generic
+#查看boot占用情况
+df 
+```
+#### ssh连接使用方向键出现乱码
+原因是新建用户使用了不同的shell
+```bash
+vim /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+hypo:x:1001:1001::/home/hypo:/bin/sh
+```
+只需要把sh改成bash就好
+
+#### ssh秘钥失效
+A机器通过ssh-copy-id root@IP(B)添加了链接到B机器的ssh秘钥。但是某天，B机器的密码修改或者机器重装，此时，在A机器上再次ssh IP(B)会报类似如下错误
+```bash
+ssh-keygen -f "/home/hypo/.ssh/known_hosts" -R "[IP]:poet"
 ```

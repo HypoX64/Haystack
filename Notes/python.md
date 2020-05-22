@@ -198,25 +198,38 @@ s = ['1.dat','10.dat','5.dat']
 new = sorted(s,key = lambda i:int(re.match(r'(\d+)',i).group()))
 ```
 ### multiprocessing 
+[https://blog.csdn.net/brucewong0516/article/details/85776194](【python】详解multiprocessing多进程-process模块（一）)
+* run（）
+       表示进程运行的方法。可以在子类中重写此方法。标准run() 方法调用传递给对象构造函数的可调用对象作为目标参数（如果有），分别使用args和kwargs参数中的顺序和关键字参数。
+* start（）
+       进程准备就绪，等待CPU调度。
+* join（[ 超时] ）
+       如果可选参数timeout是None，则该方法将阻塞，直到join()调用其方法的进程终止。如果timeout是一个正数，它最多会阻塞超时秒。请注意，None如果方法的进程终止或方法超时，则返回该方法。检查进程exitcode以确定它是否终止。
+* name
+       进程的名称。该名称是一个字符串，仅用于识别目的。
+* is_alive（）
+       返回进程是否存活。从start() 方法返回到子进程终止的那一刻，进程对象仍处于活动状态。
+* daemon
+       进程的守护进程标志，一个布尔值。必须在start()调用之前设置，当进程退出时，它会尝试终止其所有守护进程子进程。
+* pid
+       返回进程ID。在产生该过程之前，这将是 None。
+* exitcode
+       子进程的退出代码。None如果流程尚未终止，这将是。负值-N表示孩子被信号N终止。
+
 ```python
-import multiprocessing
-import time
+from multiprocessing import Process, Queue
+def preload(pool):
+    .......
+    pool.put(data)
 
-def func(msg):
-    return multiprocessing.current_process().name + '-' + msg
+def main():
+    pool = Queue(opt.image_pool)
+    for i in range(opt.load_process):
+        p = Process(target=preload,args=(pool,))
+        p.daemon = True
+        p.start()
+    data = pool.get()
 
-if __name__ == "__main__":
-    pool = multiprocessing.Pool(processes=4) # 创建4个进程
-    results = []
-    for i in range(10):
-        msg = "hello %d" %(i)
-        results.append(pool.apply_async(func, (msg, )))
-    pool.close() # 关闭进程池，表示不能再往进程池中添加进程，需要在join之前调用
-    pool.join() # 等待进程池中的所有进程执行完毕
-    print ("Sub-process(es) done.")
-    
-    for res in results:
-        print (res.get())
 ```
 ### print
 * 数字格式化输出
@@ -276,7 +289,7 @@ data = data[np.argsort(data[:,0])]
 ## pyinstaller
 
 ```bash
-pyinstaller test.py-F
+pyinstaller test.py -F
 ```
 ## opencv-python
 [Document](https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_setup/py_table_of_contents_setup/py_table_of_contents_setup.html)
@@ -303,11 +316,13 @@ cv2.IMREAD_UNCHANGED：加载图像，包括alpha通道
 #當我們縮小影像時，使用CV_INTER_AREA會有比較好的效果，當我們放大影像，CV_INTER_CUBIC會有最好的效果，但是計算花費時間較多，CV_INTER_LINEAR能在影像品質和花費時間上取得不錯的平衡。 CV_INTER_LANCZOS4    Lanczos插补，8*8大小的补点
 
 ```
-
-
-
-
-
+### fill
+* cv2.rectangle
+```python
+cv2.rectangle(image, (x,y), (x+w,y+h), (0,255,0), 2)
+#参数：pt1,对角坐标１, pt2:对角坐标２
+# 注意这里根据两个点pt1,pt2,确定了对角线的位置，进而确定了矩形的位置
+```
 ### imshow
 
 ```python
@@ -347,6 +362,32 @@ cv2.imshow("Green", cv2.merge([zeros, G, zeros]))
 cv2.imshow("Red", cv2.merge([zeros, zeros, R]))
 ```
 ## matplotlib
+### colors  markers
+```python
+colors= ['blue','orange','green','red','purple','brown','pink','gray','olive','cyan']
+markers = ['.',',','o','v','^','<','>','1','2','3','4','s','p','*','h','H','+','x','D','d','|','_']
+```
+### 3d+scatter
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+arr  = np.zeros((300,3))
+arr[0:100]  = np.random.uniform(0, 1, (100,3))
+arr[100:200]  = np.random.uniform(1, 2, (100,3))
+arr[200:300]  = np.random.uniform(2, 3, (100,3))
+for i in range(3):
+    ax.scatter(arr[i*100:(i+1)*100,0], arr[i*100:(i+1)*100,1], arr[i*100:(i+1)*100,2])
+
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
+plt.show()
+
+```
 
 ## pytorch
 [org](https://pytorch.org/)
@@ -363,8 +404,121 @@ torch.save(net.cpu().state_dict(), model_name)
 net = UNet(n_channels=3, n_classes=1)
 net.load_state_dict(torch.load(model_name))
 ```
+### def network
+[关于Pytorch几种定义网络的方法](https://zhuanlan.zhihu.com/p/80308275)
+* 直接申明
+```python
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+from collections import OrderedDict
+class Net():
+    def __init__(self):
+        super(nn.Module, NN).__init__()
+        self.fc1 = nn.Linear(10,10)
+        self.relu1 = nn.ReLU(inplace=True)
+        self.fc2 = nn.Linear(10,2)
+    def forward(self,x):
+        x = self.fc1(x)
+        x = self.relu1(x)
+        x = self.fc2(x)
+        return x
+```
+* nn.ModuleList()
+```python
+class Net():
+    def __init__(self):
+        super(nn.Module, NN).__init__()
+        self.base = nn.ModuleList([nn.Linear(10,10), nn.ReLU(), nn.Linear(10,2)])
+    def forward(self,x):
+        x = self.base(x)
+        return x
+#nn.ModuleList()接收的参数为一个List，这样就可以很方便的定义一个网络，比如 
+```
 
+* nn.Sequential()
+```python
+# nn.Sequential()里面自带了forward函数，可以直接操作输入，而nn.ModuleList()需要定义一个forward函数
+class Net():
+    def __init__(self):
+        super(nn.Module, NN).__init__()
+        self.base = nn.Sequential(nn.Linear(10,10), nn.ReLU(), nn.Linear(10,2))
+    def forward(self,x):
+        x = self.base(x)
+        return x
+ 
+# OrderedDict
+class MultiLayerNN5(nn.Module):
+    def __init__(self):
+        super(MultiLayerNN5, self).__init__()
+        self.base = nn.Sequential(OrderedDict([
+            ('0', BasicConv(1, 16, 5, 1, 2)),
+            ('1', BasicConv(16, 32, 5, 1, 2)),
+        ]))
+        self.fc1 = nn.Linear(32 * 7 * 7, 10)
 
+    def forward(self, x):
+        x = self.base(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc1(x)
+        return x
+```
+* add_module
+```python
+class MultiLayerNN4(nn.Module):
+    def __init__(self):
+        super(MultiLayerNN4, self).__init__()
+        self.base = nn.Sequential()
+        self.base.add_module('0', BasicConv(1, 16, 5, 1, 2))
+        self.base.add_module('1', BasicConv(16, 32, 5, 1, 2))
+        self.fc1 = nn.Linear(32 * 7 * 7, 10)
+
+    def forward(self, x):
+        x = self.base(x)
+        x = x.view(x.size(0),-1)
+        x = self.fc1(x)
+```
+* 骚操作 用for定义多路
+```python
+class lstm(nn.Module):
+    def __init__(self,input_size,time_step,input_nc,num_classes,Hidden_size=128,Num_layers=2):
+        super(lstm, self).__init__()
+        self.input_size=input_size
+        self.time_step=time_step
+        self.input_nc=input_nc
+        self.point = input_size*time_step
+        for i in range(input_nc):
+            exec('self.lstm'+str(i) + '=lstm_block(input_size, time_step)')
+        self.fc = nn.Linear(Hidden_size*input_nc, num_classes)
+
+    def forward(self, x):
+        y = []
+        x = x.view(-1,self.input_nc,self.time_step,self.input_size)
+        for i in range(self.input_nc):
+            y.append(eval('self.lstm'+str(i)+'(x[:,i,:])'))
+        x = torch.cat(tuple(y), 1)
+        x = self.fc(x)
+        return x
+```
+* 骚操作 用for定义多层
+```python
+class encoder_2d(nn.Module):
+    def __init__(self, input_nc, output_nc, ngf=64, n_downsampling=3, n_blocks=9, norm_layer=nn.BatchNorm2d, 
+                 padding_type='reflect'):
+        assert(n_blocks >= 0)
+        super(encoder_2d, self).__init__()        
+        activation = nn.ReLU(True)        
+        model = [nn.ReflectionPad2d(3), nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0), norm_layer(ngf), activation]
+        ### downsample
+        for i in range(n_downsampling):
+            mult = 2**i
+            model += [nn.ReflectionPad2d(1),nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=0),
+                      norm_layer(ngf * mult * 2), activation]
+        self.model = nn.Sequential(*model)
+    def forward(self, input):
+        return self.model(input)  
+
+```
 # Anaconda
 ## install
 1.download 'Anaconda3-2019.07-Linux-x86_64.sh'

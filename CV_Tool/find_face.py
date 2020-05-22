@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import random
 import string
+import util
 
 all_img_cnt = 0
 
@@ -81,8 +82,12 @@ def find_save_resize_face(input_path):
         origin_image = cv2.imread(input_path)
         h,w = origin_image.shape[:2]
         mask = np.zeros(origin_image.shape[:2],dtype = "uint8")
-        rat = min(origin_image.shape[:2])/LOADSIZE
-        image = resize(origin_image, LOADSIZE,interpolation = cv2.INTER_AREA)
+        if min(h,w) > LOADSIZE:
+            rat = min(origin_image.shape[:2])/LOADSIZE
+            image = resize(origin_image, LOADSIZE,interpolation = cv2.INTER_AREA)
+        else:
+            rat = 1.0
+            image = origin_image.copy()
 
         face_locations = face_recognition.face_locations(image,number_of_times_to_upsample=1,model=MODEL)
                
@@ -97,13 +102,13 @@ def find_save_resize_face(input_path):
                 ex=int(((EXTEND-1+0.2*random.random())*(bottom-top))/2)
             else:
                 ex=int(((EXTEND-1)*(bottom-top))/2)
-
-            if ((bottom-top)>MINSIZE) and 0.95<abs((bottom-top)/(left-right))<1.05 and (top-ex)>0 and (bottom+ex)<h and (left-ex)>0 and (right+ex)<w:
-                face = origin_image[top-ex:bottom+ex, left-ex:right+ex]
-                face = cv2.resize(face, (512,512),interpolation=cv2.INTER_LANCZOS4)
-                if lapulase(face)>Del_Blur_Score:
-                    cv2.imwrite(os.path.join(outdir_face,random_str()+'.jpg'),face)
-                    count = count+1
+            if SAVE_FACE:
+                if ((bottom-top)>MINSIZE) and 0.95<abs((bottom-top)/(left-right))<1.05 and (top-ex)>0 and (bottom+ex)<h and (left-ex)>0 and (right+ex)<w:
+                    face = origin_image[top-ex:bottom+ex, left-ex:right+ex]
+                    face = cv2.resize(face, (512,512),interpolation=cv2.INTER_LANCZOS4)
+                    if lapulase(face)>Del_Blur_Score:
+                        cv2.imwrite(os.path.join(outdir_face,random_str()+'.jpg'),face)
+                        count = count+1
             if SAVE_MASK:
                 try:
                     if MASK_TYPE=='contour':
@@ -122,11 +127,17 @@ def find_save_resize_face(input_path):
                 except Exception as e:
                     pass
         if SAVE_MASK:     
-            if count == mask_count and count > 0:
-                mask = resize(mask,512,interpolation = cv2.INTER_AREA)
+            # if count == mask_count and count > 0:
+            mask = resize(mask,512,interpolation = cv2.INTER_AREA)
+            if min(origin_image.shape)>1024:
                 origin_image = resize(origin_image,512,interpolation = cv2.INTER_AREA)
                 cv2.imwrite(os.path.join(outdir_ori,outname+filename+'.jpg'),origin_image)
-                cv2.imwrite(os.path.join(outdir_mask,outname+filename+'.png'),mask)
+            else:
+                if '.jpg' in input_path:
+                    shutil.copyfile(input_path, os.path.join(outdir_ori,outname+filename+'.jpg'))
+                else:
+                    cv2.imwrite(os.path.join(outdir_ori,outname+filename+'.jpg'),origin_image)
+            cv2.imwrite(os.path.join(outdir_mask,outname+filename+'.png'),mask)
         return count
 
     except Exception as e:
@@ -144,8 +155,9 @@ EXTEND = 1.6
 Del_Blur_Score = 20  # normal-> 20 | clear -> recommed 50
 IS_random_EXTEND = False
 MODEL = 'hog' # 'hog' | 'cnn'
+SAVE_FACE = False
 SAVE_MASK = True
-MASK_TYPE = 'rect' # rect | contour
+MASK_TYPE = 'contour' # rect | contour
 HIGH_MASK = 0.2 # more vertical mask
 LOADSIZE = 1024 # load to this size and process
 
@@ -154,11 +166,10 @@ outdir='./output/'+outname
 outdir_ori = os.path.join(outdir,'origin_image')
 outdir_face = os.path.join(outdir,'face')
 outdir_mask = os.path.join(outdir,'mask')
-if not os.path.isdir(outdir):
-    os.makedirs(outdir)
-    os.makedirs(outdir_ori)
-    os.makedirs(outdir_face)
-    os.makedirs(outdir_mask)
+util.makedirs(outdir)
+util.makedirs(outdir_ori)
+util.makedirs(outdir_face)
+util.makedirs(outdir_mask)
 
 file_list = Traversal(filedir)
 imgpath_list = picture_select(file_list)

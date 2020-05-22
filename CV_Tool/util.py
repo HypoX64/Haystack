@@ -45,6 +45,12 @@ def  writelog(path,log):
     f.write(log+'\n')
     f.close()
 
+def loadtxt(path):
+    f = open(path, 'r')
+    txt_data = f.read()
+    f.close()
+    return txt_data
+
 def makedirs(path):
     if os.path.isdir(path):
         print(path,'existed')
