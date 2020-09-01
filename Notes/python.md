@@ -257,6 +257,7 @@ args , _ = parse.parse_known_args(sys.argv[1:])
 SAVEDIR = args.savedir
 ```
 ## numpy
+[参考手册](https://docs.scipy.org/doc/numpy-1.17.0/reference/)
 * zeros/ones
 ```python
 np.zeros(shape, dtype=float, order='C')
@@ -285,6 +286,8 @@ a.reshape  #修改形状
 #按照数组的第一列进行排序
 data = data[np.argsort(data[:,0])]
 ```
+## scipy
+[参考手册](https://docs.scipy.org/doc/scipy-1.4.1/reference/)
 
 ## pyinstaller
 
@@ -362,6 +365,7 @@ cv2.imshow("Green", cv2.merge([zeros, G, zeros]))
 cv2.imshow("Red", cv2.merge([zeros, zeros, R]))
 ```
 ## matplotlib
+[实例库](https://matplotlib.org/gallery/index.html)
 ### colors  markers
 ```python
 colors= ['blue','orange','green','red','purple','brown','pink','gray','olive','cyan']

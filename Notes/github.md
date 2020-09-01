@@ -75,17 +75,19 @@ git merge online_repo1
 
 ## 插入链接图片
 [百度](http://baidu.com)
-插入网络图片：![](网络图片链接地址)，即叹号!+方括号[]+括号()，如果不加叹号!就会变成普通文本，方括号里可以加入一些 标识性的信息
+* 插入网络图片：![](网络图片链接地址)，即叹号!+方括号[]+括号()，如果不加叹号!就会变成普通文本，方括号里可以加入一些 标识性的信息
 ![baidu](http://www.baidu.com/img/bdlogo.gif "百度logo")  
 <img src=http://www.baidu.com/img/bdlogo.gif  style="zoom:50%">
 
-插入GITHub仓库里的图片：![](图片链接地址)，即叹号!+方括号[]+括号()，URL写法：http://github.com/自己的用户名/项目名/raw/分支名/存放图片的文件夹/文件夹里的图片名字
+* 插入GITHub仓库里的图片：![](图片链接地址)，即叹号!+方括号[]+括号()，URL写法：http://github.com/自己的用户名/项目名/raw/分支名/存放图片的文件夹/文件夹里的图片名字
 
-给图片加上超链接：即点击一个图片进入指定网页，方括号里写自己起的标识名称，上下两行标识要一致。
-
+* 给图片加上超链接：即点击一个图片进入指定网页，方括号里写自己起的标识名称，上下两行标识要一致。
 [![baidu]](http://baidu.com)  
-[baidu]:http://www.baidu.com/img/bdlogo.gif "百度Logo"
-
+[baidu]:http://www.baidu.com/img/bdlogo.gif "百度Logo"<br>
+* 图片居中
+<div align="center">    
+<img src="http://www.baidu.com/img/bdlogo.gif " alt="image" style="zoom:50%;" />
+</div>
 ## 插入代码片段
 插入代码片段：在代码上下行用```标记，注意`符号是tab键上面那个，要实现语法高亮，则在```后面加上编程语言的名称
 

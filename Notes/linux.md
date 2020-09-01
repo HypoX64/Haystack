@@ -1,22 +1,32 @@
 [TOC]
 ### 用户
-* 添加用户
+#### 查看当前所有用户
+cat /etc/passwd
+#### 添加用户
 ```bash
 sudo adduser hypo
 ```
-* 更改密码
+#### 更改密码
 ```bash
 sudo passwd hypo
 ```
-* 更改用户权限
+#### 更改用户权限
 ```bash
 cd /etc
 sudo vim sudosers
 hypo ALL=(ALL:ALL)  ALL
 ```
-* 删除用户
+#### 删除用户
 ```bash
 sudo userdel -r hypo
+```
+### 文件夹权限
+```bash
+#开放文件夹及子文件夹所有权限
+chmod -R 777 hypo #4是读权限，2是写权限，1是可执行权限，777就是所有权限都开，766或776才是开放其他用户的读写权限，777是开放所有权限
+#错误使用例子
+chmod -R 777 / #开放整个系统所有权限，完蛋
+chown -R mysql / #锁死所有权限，完蛋
 ```
 ### 安装显卡驱动
 ```bash
@@ -25,7 +35,23 @@ sudo apt update
 ubuntu-drivers devices#选择推荐的驱动版本
 sudo apt install nvidia-430
 ```
-### 挂载U盘
+### 分区/挂载U盘/硬盘
+#### 分区
+```bash
+fdisk -l 
+#先查看下是否有磁盘没有分区如果没有
+#device       Start       End   Sectors   Size Type
+#则该磁盘没有分区
+fdisk /dev/sdb
+#输入m，可以查看有哪些操作
+#输入p 查看当前硬盘分区，目前没有分区
+#输入n新建一个分区，输入p 建立分区，输入分区编号 1
+#设置扇区起始和结束,默认就是最大化的分区
+#输入p然后打印分区数，红色框就是已经建立好的分区
+#最后保存分区 输入w
+mkfs.ext4   /dev/sdb1
+```
+#### 挂载
 ```bash
 root@lthpc:/home/hypo# fdisk -l
 ...
@@ -33,15 +59,15 @@ Device     Start        End    Sectors  Size Type
 /dev/sdc1   2048 7813967871 7813965824  3.7T Microsoft basic data
 root@lthpc:/home/hypo# cd /media  
 root@lthpc:/media# mkdir usb
-root@lthpc:/media# mount -t ntfs-3g /dev/sdc1 /media/usb 
-
+root@lthpc:/media# mount -t ntfs-3g /dev/sdc1 /media/usb
+# ext4 ext2 xfs
 #卸载挂载点
 $ umount /dev/hda2
 $ umount /usr
 #参数可以是设备文件或安装点
 ```
 ### linux应用设置
-* goldendict
+#### goldendict
 ```bash
 # 安装
 sudo apt install goldendict
@@ -75,13 +101,13 @@ ps aux|grep python|grep -v grep|cut -c 9-15|xargs kill -15
 #“kill -15”会正常退出指定进程，-9强行杀掉
 ```
 ### 常用系统命令
-* 删除文件
+#### 删除文件
 ```bash
-rm -rf yourdir
-#-r 就是向下递归，不管有多少级目录，一并删除
-#-f 就是直接强行删除，不作任何提示的意思
+rm -rf yourdir#-r 就是向下递归，不管有多少级目录，一并删除　-f 就是直接强行删除，不作任何提示的意思
+
+find -name "*.pth" -delete　#批量删除后缀为pth的所有文件
 ```
-* cp  mv
+#### cp  mv
 ```bash
 # cp复制  　mv剪切
 cp [options] <source file or directory> <target file or directory>
@@ -100,7 +126,7 @@ cp -rf dir1 dir #复制文件夹dir1到dir2，不显示进度
 #-s 复制成符号连结文件 (symbolic link)，亦即『快捷方式』档案；
 #-u 若 destination 比 source 旧才更新 destination。
 ```
-* deb
+#### deb
 ```bash
 sudo apt-get install -f #解决依赖关系
 dpkg -i <package.deb> #安装一个 Debian 软件包，如你手动下载的文件。
@@ -133,6 +159,10 @@ $ sudo systemctl enable teamviewerd.service
 ```
 ### 压缩解压
 ```bash
+#7z
+安装：apt-get install p7zip-full
+解压7z：使用方法：7z x file.7z 
+
 #.tar   .tar.xz
 tar xvf filename.tar #.tar 解包 
 tar cvf filename.tar dirname #.tar 打包 
@@ -165,8 +195,9 @@ tar cvf - test.txt | pigz > test.tar.gz
 tar -I pigz -xvf /path/to/archive.tar.gz -C /where/to/unpack/it/
 ```
 ### rdesktop(Windows远程桌面)
-```
+```bash
 rdesktop -u Administrator -p password ip -g 1280x720
+-r sound:local:alsa #远程声音
 ```
 ### vim
 *  模式
@@ -177,6 +208,7 @@ rdesktop -u Administrator -p password ip -g 1280x720
 * 保存退出
 保存退出都要在命令模式下完成。保存用 :w path/to.txt，退出用 :q。如果是编辑已经存在的文件可以直接用 :wq 退出。
 ### ssh
+#### install & run
 * install
 ```bash
 sudo apt-get install openssh-client 
@@ -203,7 +235,7 @@ ssh -p 1234 hypo@192.168.0.1
 * exit
 ```bash
 'Ctrl+D'
-#or
+#orchmod -R 777 /home/mypackage
 exit
 ```
 * ssh-keygen
@@ -219,7 +251,7 @@ nohup python3 a.py &
 ```bash
 firefox &
 ```
-* transmit files
+#### transmit files
 ```bash
 #压缩+解压流传输 把本地的文件复制到远程主机上
 tar -c './dir' |pigz |ssh hypo@172.31.73.116 "gzip -d|tar -xC /home/hypo/MyProject"
