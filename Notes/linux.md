@@ -49,7 +49,7 @@ fdisk /dev/sdb
 #设置扇区起始和结束,默认就是最大化的分区
 #输入p然后打印分区数，红色框就是已经建立好的分区
 #最后保存分区 输入w
-mkfs.ext4   /dev/sdb1
+mkfs.ext4 /dev/sdb1
 ```
 #### 挂载
 ```bash
@@ -66,6 +66,37 @@ $ umount /dev/hda2
 $ umount /usr
 #参数可以是设备文件或安装点
 ```
+### smb共享设置
+* 安装smb
+```bash
+sudo apt-get install samba
+sudo apt-get install samba-client
+```
+* 建立用于共享的用户及文件夹(/home/share)并设置权限
+```bash
+chmod 777 /home/share
+```
+* 修改配置文件
+```bash
+vim /etc/samba/smb.conf
+#在[global]中加入
+security = user
+#在文件末尾加入
+[share]
+    path = /home/share
+    browseable = yes
+    writable = yes
+    create mask = 0644
+    directory mask = 0755
+    valid users = share
+    write list = share
+```
+* 设置smb登录账户及密码
+```bash
+smbpasswd -a share
+```
+* win+r查看共享文(file://ip/)
+
 ### linux应用设置
 #### goldendict
 ```bash
@@ -272,6 +303,7 @@ rm -rf  ~/baidunetdisk #这个蛇皮的bug不知道啥时候才能修复
 ```
 #### nvidia-smi command not found显卡驱动故障
 ```bash
+# 方法一:重装驱动
 sudo apt-get purge nvidia*
 sudo apt-get autoremove 
 
@@ -279,6 +311,13 @@ sudo add-apt-repository ppa:graphics-drivers/ppa
 sudo apt update
 ubuntu-drivers devices
 sudo apt install nvidia-430
+
+# 方法二
+# NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.
+sudo apt install dkms
+sudo dkms install -m nvidia -v 418.87.00
+# 其中，418.87.00 是之前安装 nvidia 驱动的版本号，可通过下面方法查到：
+ls /usr/src | grep nvidia
 ```
 #### ERROR：gzip: stdout: No space left on device(boot空间不足)
 内核安装过多导致的空间不足
