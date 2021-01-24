@@ -131,6 +131,7 @@ dmypy.json
 # myrules
 #all
 __pycache__/
+test/
 tmp/
 output/
 /sftp-config.json

@@ -128,6 +128,19 @@ def Traversal(filedir):
 * [python 获取文件大小，创建时间和访问时间](https://www.cnblogs.com/shaosks/p/5614630.html)
 
 ### time
+* 获得当前时间
+```python
+# Thu Apr  7 10:05:21 2016
+localtime = time.asctime( time.localtime(time.time()) ) 
+# 2016-03-20 11:45:39
+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+# Sat Mar 28 22:24:24 2016
+print time.strftime("%a %b %d %H:%M:%S %Y", time.localtime()) 
+# 转时间戳
+a = "Sat Mar 28 22:24:24 2016"
+print time.mktime(time.strptime(a,"%a %b %d %H:%M:%S %Y"))
+```
+* 计算程序运行时间
 ```python
 #ns
 import time
@@ -288,7 +301,11 @@ data = data[np.argsort(data[:,0])]
 ```
 ## scipy
 [参考手册](https://docs.scipy.org/doc/scipy-1.4.1/reference/)
-
+## pipreqs
+```bash
+# 生成依赖配置文件，在项目文件夹中输入以下命令
+pipreqs ./ --encoding=utf8
+```
 ## pyinstaller
 
 ```bash
@@ -536,8 +553,44 @@ class encoder_2d(nn.Module):
         self.model = nn.Sequential(*model)
     def forward(self, input):
         return self.model(input)  
-
 ```
+### Multi-GPU (DataParallel)
+* 最简单的办法
+```python
+import torch.nn as nn
+# instantiation
+net = MyNet.Net()
+# Parallel Computing
+net = nn.DataParallel(net)
+net = net.cuda()
+```
+* 指定GPU
+```python
+# 方法一
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,3'
+model = nn.DataParallel(model)
+model = model.cuda()
+inputs = inputs.cuda() #注意，默认加载到VISIBLE中的第一块GPU
+labels = labels.cuda()
+# 方法二
+model=nn.DataParallel(model,device_ids=[0,1,2]) # multi-GPU
+```
+
+* 注意事项
+```python
+# 逻辑上，事实上DataParallel也是一个Pytorch的nn.Module，只是这个类其中有一个module的变量用来保存传入的实际模型。
+# 所以model调用的函数都要变成model.module.*
+# 保存和加载模型原本是
+torch.save(model.state_dict(), file_name)
+# 现在变成
+torch.save(model.module.state_dict(), file_name)
+# 当然也载入的时候用一个DataParallel载入，再取出原始模型：
+m=nn.DataParallel(Resnet18())
+m.load_state_dict(torch.load(path))
+m=m.module
+```
+
+
 # Anaconda
 ## install
 1.download 'Anaconda3-2019.07-Linux-x86_64.sh'
@@ -582,3 +635,28 @@ channels:
   - defaults
 show_channel_urls: true
 ```
+### PowerShell 中激活anaconda的虚拟python环境
+
+* Conda版本低于4.6
+
+```shell
+conda install -n root -c pscondaenvs pscondaenvs
+```
+以管理员身份启动PowerShell，并执行
+```shell
+Set-ExecutionPolicy RemoteSigned
+```
+* Conda版本大于等于4.6
+
+```shell
+conda init powershell
+```
+以管理员身份启动PowerShell，并执行
+```shell
+Set-ExecutionPolicy RemoteSigned
+```
+* 注意激活时不要加conda，直接activate env就ok
+
+### 启动“powershell.exe”时出现错误 0x80070002
+在Path添加系统环境变量
+```C:\Windows\System32\WindowsPowerShell\v1.0```
