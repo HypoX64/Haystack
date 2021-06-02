@@ -1,5 +1,5 @@
 '''
-Delete duplicate files bt MD5
+Delete duplicate files bt MD5 and name
 '''
 import hashlib
 import os
@@ -28,14 +28,16 @@ clean_filedir=str(clean_filedir.replace("'",""))
 print('Get infos from ref_filedir...')
 ref_paths = util.Traversal(ref_filedir)
 ref_infos = {}
+ref_names = []
 for path in ref_paths:
     ref_infos[GetFileMd5(path)] = path
+    ref_names.append(os.path.split(path)[1])
 
 print('Begin remove...')
 clean_paths = util.Traversal(clean_filedir)
 del_num = 0
 for path in clean_paths:
-    if GetFileMd5(path) in ref_infos:
+    if GetFileMd5(path) in ref_infos or os.path.split(path)[1] in ref_names:
         print('Del: '+path)
         os.remove(path)
         del_num += 1

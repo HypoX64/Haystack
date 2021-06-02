@@ -299,6 +299,14 @@ a.reshape  #修改形状
 #按照数组的第一列进行排序
 data = data[np.argsort(data[:,0])]
 ```
+* 转置
+```numpy.transpose``
+二维
+因为 x.transpose((0,1)) 表示按照原坐标轴改变序列，也就是保持不变
+而 x.transpose((1,0)) 表示交换 ‘0轴’ 和 ‘1轴’，所以就得到如下图所示结果：
+三维
+A.transpose((0,1,2))  #保持A不变
+A.transpose((1,0,2))  #将 0轴 和 1轴 交换
 ## scipy
 [参考手册](https://docs.scipy.org/doc/scipy-1.4.1/reference/)
 ## pipreqs

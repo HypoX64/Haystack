@@ -29,11 +29,11 @@ du --max-depth=1 -h ./ #查看当前目录占用空间
 
 #### 删除文件
 ```bash
-rm -rf yourdir#-r 就是向下递归，不管有多少级目录，一并删除　-f 就是直接强行删除，不作任何提示的意思
+rm -rf yourdir #-r 就是向下递归，不管有多少级目录，一并删除　-f 就是直接强行删除，不作任何提示的意思
 
 find -name "*.pth" -delete　#批量删除后缀为pth的所有文件
 ```
-#### cp  mv
+#### cp  mv(改文件名也用这个)
 ```bash
 # cp复制  　mv剪切
 cp [options] <source file or directory> <target file or directory>
@@ -58,8 +58,8 @@ cp -rf dir1 dir #复制文件夹dir1到dir2，不显示进度
 #开放文件夹及子文件夹所有权限
 chmod -R 777 file #4是读权限，2是写权限，1是可执行权限，777就是所有权限都开，766或776才是开放其他用户的读写权限，777是开放所有权限
 #错误使用例子
-chmod -R 777 / #开放整个系统所有权限，完蛋
-chown -R mysql / #锁死所有权限，完蛋
+# chmod -R 777 / #开放整个系统所有权限，完蛋
+# chown -R mysql / #锁死所有权限，完蛋
 ```
 
 #### 压缩解压
@@ -135,11 +135,19 @@ Device     Start        End    Sectors  Size Type
 root@lthpc:/home/hypo# cd /media  
 root@lthpc:/media# mkdir usb
 root@lthpc:/media# mount -t ntfs-3g /dev/sdc1 /media/usb
-# ext4 ext2 xfs
+# 格式可以是:ext4 ext2 xfs
+# 用df -h 查看是否挂载成功
 #卸载挂载点
 $ umount /dev/hda2
 $ umount /usr
 #参数可以是设备文件或安装点
+```
+##### 开机自动挂载
+```bash
+sudo vim /etc/fstab
+# 在最后面加上
+/dev/sdb1 /media/hypo ext4 defaults 0 0
+# 设备文件 挂载点 文件系统类型 挂载参数 设备标记 检测顺序
 ```
 
 
@@ -211,6 +219,13 @@ ps aux|grep "python" | grep -v grep|cut -c 9-15|xargs kill -15
 #“xargs kill -15”中的xargs命令是用来把前面命令的输出结果（PID）作为“kill -15”命令的参数，并执行该令。 
 #“kill -15”会正常退出指定进程，-9强行杀掉
 ```
+#### 进程暂停与继续
+```bash
+# 暂停PID为1234的进程
+kill -STOP 1234
+# 继续PID为1234的进程
+kill -CONT 1234 
+```
 
 #### 调整CPU性能模式
 ```bash
@@ -278,6 +293,39 @@ nohup python3 a.py &
 ```bash
 firefox &
 ```
+#### ssh-windows-server
+“应用”>“应用和功能”>“管理可选功能”>添加openssh
+```bash
+Start-Service sshd
+# OPTIONAL but recommended:
+Set-Service -Name sshd -StartupType 'Automatic'
+# Confirm the Firewall rule is configured. It should be created automatically by setup. 
+Get-NetFirewallRule -Name *ssh*
+# There should be a firewall rule named "OpenSSH-Server-In-TCP", which should be enabled
+# If the firewall does not exist, create one
+New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+```
+默认用户名为C:\Users\username的username
+密码则为该用户登录密码
+
+#### ssh-windows 免密登录 linux
+```bash
+# 先在powershell中执行
+function ssh-copy-id([string]$userAtMachine){   
+    $publicKey = "$ENV:USERPROFILE" + "/.ssh/id_rsa.pub"
+    if (!(Test-Path "$publicKey")){
+        Write-Error "ERROR: failed to open ID file '$publicKey': No such file"            
+    }
+    else {
+        & cat "$publicKey" | ssh $userAtMachine "umask 077; test -d .ssh || mkdir .ssh ; cat >> .ssh/authorized_keys || exit 1"      
+    }
+}
+#
+ssh-keygen -t rsa
+ssh-copy-id ldz@192.168.0.1
+```
+
+
 #### rdesktop(Windows远程桌面)
 ```bash
 rdesktop -u Administrator -p password ip -g 1280x720
@@ -294,7 +342,7 @@ scp root@www.test.com:/val/test/test.tar.gz /val/test/test.tar.gz
 #把本地的文件复制到远程主机上
 scp /val/test.tar.gz root@www.test.com:/val/test.tar.gz
 #把远程的目录复制到本地
-scp -r root@www.test.com:/val/test/ /val/test/
+scp -r root@www.test.com:/val/test/ /val
 ```
 #### smb共享设置
 * 安装smb
@@ -309,24 +357,37 @@ chmod 777 /home/share
 * 修改配置文件
 ```bash
 vim /etc/samba/smb.conf
-#在[global]中加入
-security = user
+
 #在文件末尾加入
 [share]
-    path = /home/share
-    browseable = yes
+    comment = share
+    path = /media/harddisk/share
+    public = yes
     writable = yes
-    create mask = 0644
-    directory mask = 0755
-    valid users = share
-    write list = share
+    directory mask = 0775
+    create mask = 0775
+    valid users = share,hypo,root
+    write list = share,hypo,root
+    browseable = yes
+    available = yes
 ```
 * 设置smb登录账户及密码
 ```bash
-smbpasswd -a share
+sudo smbpasswd -a share
+```
+* 启动
+```bash
+sudo /etc/init.d/smbd start
+```
+* 查看smb连接
+```bash
+smbclient -L  //localhost
 ```
 * win+r查看共享文(file://ip/)
-
+* windows无法访问,在cmd中
+```bash
+net use * /del /y
+```
 
 ### 常见系统故障
 #### 百度盘 无法登录
@@ -384,6 +445,7 @@ ssh-keygen -f "/home/hypo/.ssh/known_hosts" -R "[IP]:poet"
 超出了进程同一时间最多可开启的文件数(一个应用调用的最大进程数)，linux中默认是1024<br>
 解决办法： 在运行程序前输入```ulimit -n 2048```<br>
 或者
+
 ```bash
 sudo vim /etc/security/limits.conf
 #最后添加两行代码

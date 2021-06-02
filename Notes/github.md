@@ -9,6 +9,18 @@ git add *  ###如有新添加的文件执行此行，添加所有的文件
 git commit -m "输入你本次提交的文字"
 git push -u origin master
 ```
+## 常见问题
+### git初始化
+```bash
+git config --global user.name "填写自己的用户名" 
+git config --global user.email 填写自己的邮箱号      
+```
+### Failed to connect to github.com port 443: Timed out
+使用了代理导致的
+执行
+```bash
+git config --global --unset http.proxy
+```
 ## 合并仓库
 大致思路是伪造远程的repo1仓库为repo2的一个分支，然后合并进来；
 若是文件有冲突、或要建立子目录，建议在repo1中先解决，再进行如上操作。
@@ -67,9 +79,11 @@ git merge online_repo1
 ## 缩进
 >缩进一
 >>缩进二
+>>
 >>>缩进三
+>
 >>>>缩进四
->>>>
+>
 >>>>>缩进五
 
 
