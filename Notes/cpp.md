@@ -56,28 +56,74 @@ settings.json(自动格式化代码)
 [最简单的例子](https://blog.csdn.net/u011341856/article/details/102408063)
 [语句使用方法](https://zhuanlan.zhihu.com/p/92928820)
 
-```cmake 
-# 版本限制-必须
-cmake_minimum_required(VERSION 3.5)
-# 项目名-必须
-project (hello)
-# 查找在某个路径下的所有源文件
-aux_source_directory(< dir > < variable >)
-# executable
-add_executable(hello_cmake main.cpp)
+
+### 说明
+```cmake
+${PROJECT_NAME} # Name of the project given to the project command.
+${CMAKE_BINARY_DIR} # The path to the top level of the build tree.
+${PROJECT_SOURCE_DIR} # Top level source directory for the current project.
+${ORIGIN} # 运行程序所在目录
+cmake_minimum_required(VERSION 3.5) #最低版本限制
+project (hello) # 指定项目名
+
+aux_source_directory(/dir/to/your/src DIR_LIB_SRCS) # 查找在某个路径下的所有源文件 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)#设置输出二进制文件路径
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)#设置输出so的位置
+
+add_executable(<name> source1 [source2 ...]) #Add an executable to the project using the specified source files.
 
 
-add_library(<name> [STATIC | SHARED | MODULE]
-            [EXCLUDE_FROM_ALL]
-            source1 [source2 ...])
-#<name> ：库的名字，直接写名字即可，不要写lib，会自动加上前缀的哈。
-#[STATIC | SHARED | MODULE] ：类型有三种。
-#SHARED,动态库
-#STATIC,静态库
-#MODULE,在使用 dyld 的系统有效,如果不支持 dyld,则被当作 SHARED 对待。
+include_directories("/include") #配置头文件目录
+link_directories("lib") #配置库文件目录 : 设置 lib 库文件查找目录 
 
 
 ```
+### 基本实例
+```cmake 
+
+cmake_minimum_required(VERSION 3.5)
+
+# Set the project name
+project (hello)
+
+# Add an executable
+add_executable(hello_cmake main.cpp)
+
+```
+
+### 使用动态库
+```cmake
+cmake_minimum_required (VERSION 3.8)
+project (demo)
+
+#配置头文件目录
+include_directories("/include")
+#配置库文件目录 : 设置 lib 库文件查找目录 
+link_directories("lib")
+#注意lib中的文件应拷贝到usr/lib
+ 
+# 将源代码添加到此项目的可执行文件。
+add_executable (${PROJECT_NAME} "main.cpp" )
+
+#设置编译链接的库
+target_link_libraries(
+	${PROJECT_NAME}	#本项目的解决方案名称
+	avcodec		#动态库名字
+	
+# 最后设置一下运行时动态库的路径，记得把so拷贝设置好的路径下
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+SET(CMAKE_INSTALL_RPATH ${ORIGIN}/lib)
+)
+
+也可以单独链接某个so
+# 或者单独按照路径链接某个so
+# SHARED表示添加的是动态库 IMPORTED表示是引入已经存在的动态库
+add_library( avcodec SHARED IMPORTED )
+set_target_properties( avcodec PROPERTIES IMPORTED_LOCATION ${ffmpeg_libs_DIR}/libavcodec.so )
+
+```
+
+### other
 * 简单的工程目录
 src           文件夹：存放.cpp文件
 include   文件夹：存放.h头文件
