@@ -1,11 +1,40 @@
-### base
+[top]
+### Base
 ```bash
--vf crop=600:600:600:0 # 剪裁, 输出h,w，开始裁剪的h，w
+-vf crop=600:600:600:0 # 剪裁, 输出w,h，开始裁剪的w，h
 -s 360x360             # 改变分辨率
 -filter_complex hstack # 水平拼接两个视频
--filter:a "volume=1.5" 
+-filter:a "volume=1.5" # 音量
+-ar 48000              # 音频采样率
+-vcodec libx264 -crf 18 -pix_fmt yuv420p
+
 
 ```
+
+### 统计总帧数
+```bash
+ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nokey=1:noprint_wrappers=1 input.mp4
+```
+
+### 图片转视频
+```
+ffmpeg -y -r 60 -i %05d.png -crf 18 -pix_fmt yuv420p out.mp4
+```
+
+### 通过pipe推流到python
+```bash
+
+```
+
+### wav与pcm的转换
+```bash
+# wav 2 pcm
+ffmpeg -i mix_new_silent.wav -f s16le -ar 16000 -ac 1 -acodec pcm_s16le output.pcm
+# pcm 2 wav
+ffmpeg -ac 1 -ar 16000 -f s16le -i .\output.pcm test.wav
+```
+
+
 ### 多宫格效果
 ```bash
 ffmpeg -i 1.mp4 -i 2.mp4 -i 3.mp4 -i 4.mp4 

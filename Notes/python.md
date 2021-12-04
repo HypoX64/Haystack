@@ -598,12 +598,22 @@ m.load_state_dict(torch.load(path))
 m=m.module
 ```
 
+## tensorflow
+查看死否支持gpu
+```python
+import tensorflow as tf
+print(tf.test.is_gpu_available())
 
+```
 # Anaconda
 ## install
-1.download 'Anaconda3-2019.07-Linux-x86_64.sh'
-2.sh 'Anaconda3-2019.07-Linux-x86_64.sh'
-3.if failed:
+* download 'Anaconda3-2019.07-Linux-x86_64.sh'
+```
+wget https://repo.anaconda.com/archive/Anaconda3-2021.05-Linux-x86_64.sh
+sh 'Anaconda3-2019.07-Linux-x86_64.sh'
+```
+* if failed:
+
 ```bash
 vim ~/.bashrc
 export PATH=$PATH:/home/hypo/anaconda3/bin
@@ -620,6 +630,8 @@ conda list                        #查看当前环境安装的包
 conda info --envs                 #查看conda环境信息
 conda activate envname            #激活环境
 conda deactivate                  #退出当前环境
+
+conda install xxx -c conda-forge
 ```
 ### solution
 * conda安装环境出现safetyerror

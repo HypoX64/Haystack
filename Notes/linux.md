@@ -76,6 +76,8 @@ tar cvf filename.tar dirname #.tar 打包
 tar cvzf - filedir | split -d -b 50m - filename #.tar 分卷打包 
 cat x* > myzip.tar.gz #.tar 分卷解包
 tar xzvf myzip.tar.gz
+tar -xvf  压缩文件 -C  /指定目录  #解压到指定目录
+
 
 #.gz
 gunzip filename.gz #.gz 解压1 
@@ -85,6 +87,7 @@ gzip filename #.gz 压缩
 #.tar.gz 
 tar zxvf filename.tar.gz #.tar.gz 和 .tgz 解压 
 tar zcvf filename.tar.gz dirname #.tar.gz 和 .tgz 压缩 
+tar cvf - filename | pigz > filename.tar.gz #.tar.gz 多线程压缩
 
 #zip
 unzip filename.zip  -d filedir #.zip 解压 
@@ -102,6 +105,34 @@ tar cvf - test.txt | pigz > test.tar.gz
 tar -I pigz -xvf /path/to/archive.tar.gz -C /where/to/unpack/it/
 ```
 
+
+#### 查找文件
+```bash
+find ./ -name '*finename*'
+```
+#### 统计文件数量
+```bash
+# 统计当前目录下文件的个数（不包括目录）
+ls -l | grep "^-" | wc -l
+# 统计当前目录下文件的目录数量
+ls -l | grep "^d" | wc -l
+# 统计当前目录下文件的个数（包括子目录）
+ls -lR| grep "^-" | wc -l
+# 查看某目录下文件夹(目录)的个数（包括子目录）
+ls -lR | grep "^d" | wc -l
+```
+#### 统计文件占用空间大小
+```bash
+du -h --max-depth=1 ./
+```
+
+#### 软链接
+```bash
+ln -s [源文件或源目录] [目标文件或者目标目录] 
+sudo ldconfig
+```
+
+
 ### 硬件及驱动
 #### 安装显卡驱动
 ```bash
@@ -110,6 +141,41 @@ sudo apt update
 ubuntu-drivers devices#选择推荐的驱动版本
 sudo apt install nvidia-430
 ```
+#### CUDA Cudnn
+* CUDA（建议安装runtime）
+https://developer.nvidia.com/cuda-toolkit-archive
+To uninstall the CUDA Toolkit, run cuda-uninstaller in /usr/local/cuda-11.3/bin
+* cudnn
+https://developer.nvidia.com/rdp/cudnn-archive
+有两种安装方法
+
+1.cuDNN Library for Linux (x86_64)
+```bash
+gzip -dv cudnn-11.3-linux-x64-v8.2.0.53.tgz
+tar xvf cudnn-11.3-linux-x64-v8.2.0.53.tar
+# 将cuda/include/cudnn*文件复制到usr/local/cuda/*文件夹，将cuda/lib64/下所有文件复制到/usr/local/cuda/lib64文件夹中，并添加读取权限：
+sudo cp cuda/include/* /usr/local/cuda/include
+sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64
+# 后面的视乎不做也行
+sudo chmod a+r /usr/local/cuda/include/cudnn*
+sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
+# 添加软链接到/usr/local/lib/
+cd /usr/local/cuda/lib64
+sudo ln -s ./libcudnn* /usr/local/lib/
+sudo ldconfig
+```
+2.cuDNN Code Samples and User Guide for Ubuntu20.04 x86_64 (Deb)
+```bash
+#直接安装
+```
+* 如果需要使用nvcc，需要添加环境变量
+```bash
+vim ~/.bashrc
+export LD_LIBRARY_PATH=/usr/local/cuda/lib
+export PATH=$PATH:/usr/local/cuda/bin
+source ~/.bashrc
+```
+
 #### 分区/挂载U盘/硬盘
 ##### 分区
 ```bash
@@ -176,7 +242,24 @@ sudo make install
 trans -e google -s auto -t zh-CN -show-original y -show-original-phonetics n -show-translation y -no-ansi -show-translation-phonetics n -show-prompt-message n -show-languages y -show-original-dictionary n -show-dictionary n -show-alternatives n ''%GDWORD%''
 ```
 
+### 包管理工具
+#### apt
+#### yum
+```bash
+yum list | grep   # 列出源中可安装的包
+yum list installed # 列出所有已安装的软件包 
+```
+
+
 ### 常用系统命令
+#### 配置环境变量
+```bahs
+vim ~/.bashrc
+source ~/.bashrc
+```
+
+
+
 
 #### deb
 ```bash
@@ -451,4 +534,99 @@ sudo vim /etc/security/limits.conf
 #最后添加两行代码
 * soft nofile 4096
 * hard nofile 4096
+```
+
+
+### Windows
+#### 无法启用可选诊断数据
+```bash
+# 管理员运行pwoershell
+$path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollectio"
+# Telemetry level: 1 - basic, 3 - full
+$value = "3"
+New-ItemProperty -Path $path -Name AllowTelemetry -Value $value -Type Dword -Force
+New-ItemProperty -Path $path -Name MaxTelemetryAllowed -Value $value -Type Dword -Force
+```
+
+
+### WSL
+* 查看wsl版本
+```bash
+wsl -l -v
+```
+* wsl 与wsl2切换
+https://docs.microsoft.com/zh-cn/windows/wsl/install-win10
+```
+wsl --set-version Ubuntu 2
+wsl --set-version Ubuntu 1
+```
+* 升级
+```bash
+wsl --update
+```
+* 重启
+```bash
+wsl --shutdown
+wsl
+```
+
+* 限制wsl2内存使用
+```%UserProfile%\.wslconfig```
+```bash
+[wsl2]
+processors=16
+memory=8GB
+swap=16GB
+localhostForwarding=true
+```
+
+* 清理内存缓存
+https://zhuanlan.zhihu.com/p/166102340
+```bash
+echo 3 > /proc/sys/vm/drop_caches
+```
+* 快照与回滚
+https://blog.csdn.net/weixin_43425561/article/details/115765148
+```bash
+# 查看名字
+wsl -l -v
+# 生成快照
+wsl --export Ubuntu d:\wsl-Ubuntu-baseevn.tar
+# 回滚
+wsl --unregister Ubuntu  #注销当前系统
+wsl --import Ubuntu d:\wsl d:\wsl-Ubuntu-baseevn.tar --version 2 回滚
+Ubuntu config --default-user [USERNAME] #设置默认登陆用户
+```
+
+* 让wsl支持远程ssh登陆
+```bash
+
+# 启动ssh-server
+sudo ssh-keygen -A
+sudo /etc/init.d/ssh start
+# 修改配置文件
+sudo vim /etc/ssh/sshd_config
+Port 2222
+ListenAddress 0.0.0.0
+PermitRootLogin yes
+PasswordAuthentication yes
+PermitEmptyPasswords no
+# 重启ssh服务
+sudo service ssh restart
+# 回到windows尝试本地连接
+ssh hypo@127.0.0.1 -p 2222
+# 如果需要访问需要设置端口转发，将本地ip192.168.31.175转发到127.0.0.1
+netsh interface portproxy add v4tov4 listenaddress=192.168.31.175 listenport=2222 connectaddress=127.0.0.1 connectport=2222
+# 查看端口转发
+netsh interface portproxy show v4tov4
+#   地址            端口        地址            端口
+#   --------------- ----------  --------------- ----------
+#   192.168.31.175  2222        127.0.0.1       2222
+
+# 设置防火墙规则
+netsh advfirewall firewall add rule name=WSL2 dir=in action=allow protocol=TCP localport=2222
+
+# 最终连接测试
+ssh hypo@172.31.73.5 -p 2222
+
 ```
