@@ -1,4 +1,80 @@
-[toc]
+- [1 环境配置](#1-环境配置)
+  - [1.1  base](#11--base)
+  - [1.2 VScode](#12-vscode)
+    - [1.2.2 使用vscode配置cmake 以及gdb调试](#122-使用vscode配置cmake-以及gdb调试)
+  - [1.3 windows](#13-windows)
+  - [1.4 VS studio](#14-vs-studio)
+- [2 gcc](#2-gcc)
+  - [2.1 多版本gcc切换](#21-多版本gcc切换)
+  - [2.2 gcc g++的区别](#22-gcc-g的区别)
+  - [2.3 Flag](#23-flag)
+  - [2.4 pkg-config](#24-pkg-config)
+  - [2.5 ldd (查看动态库依赖关系)](#25-ldd-查看动态库依赖关系)
+- [3 cmake](#3-cmake)
+  - [3.1 install](#31-install)
+  - [3.2 基本语法](#32-基本语法)
+  - [3.3 基本实例](#33-基本实例)
+  - [3.4 使用动态库](#34-使用动态库)
+  - [3.5 other](#35-other)
+  - [3.6 pkg-config](#36-pkg-config)
+- [4 c++](#4-c)
+  - [4.1 基本使用](#41-基本使用)
+    - [4.1.1 基本类型](#411-基本类型)
+    - [4.1.2 作用域](#412-作用域)
+    - [4.1.3 命名空间](#413-命名空间)
+    - [4.1.4 函数](#414-函数)
+      - [4.1.4.1 三种传值方式](#4141-三种传值方式)
+      - [4.1.4.1 重载](#4141-重载)
+    - [4.1.5 类](#415-类)
+    - [4.1.5.1 构造函数](#4151-构造函数)
+    - [4.1.5.2 带参数的构造函数](#4152-带参数的构造函数)
+    - [4.1.5.3 析构函数](#4153-析构函数)
+    - [4.1.5.4 不同的初始化方法](#4154-不同的初始化方法)
+  - [4.3 字符串](#43-字符串)
+    - [4.3.1 格式化输出](#431-格式化输出)
+    - [4.3.2  获取当前路径并拼接](#432--获取当前路径并拼接)
+  - [4.4 vector](#44-vector)
+  - [4.5 list](#45-list)
+  - [4.6 map](#46-map)
+  - [4.7 内存泄漏及垃圾回收](#47-内存泄漏及垃圾回收)
+    - [4.7.1  什么时候要做垃圾回收？](#471--什么时候要做垃圾回收)
+    - [4.7.2 如何检测代码中的内存泄漏](#472-如何检测代码中的内存泄漏)
+    - [4.7.3 智能指针](#473-智能指针)
+  - [4.8 c++11 特性](#48-c11-特性)
+    - [4.8.1 std::nothrow](#481-stdnothrow)
+    - [4.8.2 智能指针shared_ptr](#482-智能指针shared_ptr)
+- [5 opencv](#5-opencv)
+  - [5.1 install](#51-install)
+    - [5.1.1 常见问题](#511-常见问题)
+  - [5.2 API](#52-api)
+    - [5.2.1 pixel](#521-pixel)
+    - [5.2.2 Mat](#522-mat)
+      - [5.2.2.1 快速访问并修改Mat中的像素的多种方法](#5221-快速访问并修改mat中的像素的多种方法)
+    - [5.2.3 打开图片,获取长宽，色彩空间转换，显示，保存](#523-打开图片获取长宽色彩空间转换显示保存)
+    - [5.2.4 resize](#524-resize)
+    - [5.2.5 矩阵运算](#525-矩阵运算)
+    - [5.2.6 通道的拆分与合并](#526-通道的拆分与合并)
+    - [5.2.7 骚操作](#527-骚操作)
+- [6 TensorRT](#6-tensorrt)
+  - [6.1 install](#61-install)
+    - [6.1.1 drive and cuda and cudnn](#611-drive-and-cuda-and-cudnn)
+    - [6.1.2 TensorRT](#612-tensorrt)
+    - [6.1.3 python API](#613-python-api)
+  - [6.2 use](#62-use)
+- [7 libtorch](#7-libtorch)
+- [8 openvino](#8-openvino)
+  - [8.1 install](#81-install)
+  - [8.2 搭建自己的推理易用库](#82-搭建自己的推理易用库)
+- [9 c++工程常见问题](#9-c工程常见问题)
+  - [9.1 gdb调试](#91-gdb调试)
+  - [9.2 bug](#92-bug)
+  - [9.2.1 file format not recognized; treating as linker script](#921-file-format-not-recognized-treating-as-linker-script)
+  - [9.2.2 undefined reference to `std::](#922-undefined-reference-to-std)
+  - [9.2.3 undefined reference to `Json::Reader::parse或类似的无法调用](#923-undefined-reference-to-jsonreaderparse或类似的无法调用)
+  - [9.2.4 GLIBCXX_3.4.20' not found](#924-glibcxx_3420-not-found)
+  - [9.2.4 undefined reference to `lgammaf@GLIBC_2.23'](#924-undefined-reference-to-lgammafglibc_223)
+- [9.3 windows-bug](#93-windows-bug)
+  - [error LNK2019: 无法解析的外部符号 “void __cdecl cv::imshow(class](#error-lnk2019-无法解析的外部符号-void-__cdecl-cvimshowclass)
 
 ## 1 环境配置
 ### 1.1  base
@@ -72,6 +148,13 @@ settings.json(自动格式化代码)
 
 ### 1.3 windows
 [gcc](http://mingw-w64.yaxm.org/doku.php)  [cmake](https://cmake.org/)
+建议使用Visual Studio作为编译器
+```cmd
+cmake -H. -B./build -G "Visual Studio 16 2019" -T host=x64 -A x64 -DCMAKE_BUILD_TYPE=debug
+cmake --build ./build --config Debug --target clean -j 10 --
+cmake --build ./build --config Debug --target ALL_BUILD -j 10 --
+```
+
 ### 1.4 VS studio
 
 ## 2 gcc
@@ -125,7 +208,7 @@ export PKG_CONFIG_PATH=/your/path:$PKG_CONFIG_PATH
 # --libs : 列出指定库的链接 flag
 ```
 
-### 2.5 ldd
+### 2.5 ldd (查看动态库依赖关系)
 ```bash
 # list, dynamic, dependencies
 # 列出动态库依赖关系
@@ -139,7 +222,10 @@ ldd util.so
 
 ### 3.1 install 
 ```bash
+# ubuntu
 sudo apt-get install openssl libssl-dev
+# centos
+yum install  -y openssl  openssl-devel
 wget ... #下载源码
 tar zxvf cmake-3.20.6.tar.gz
 cd cmake-3.20.6
@@ -171,6 +257,14 @@ link_directories("lib") #配置库文件目录 : 设置 lib 库文件查找目�
 -DCMAKE_BUILD_TYPE=Release #指定为发行版
 -DCMAKE_INSTALL_PREFIX=/usr/local #指定安装目录
 
+# 手动指定编译器
+set(CMAKE_C_COMPILER "/usr/bin/gcc")
+set(CMAKE_CXX_COMPILER "/usr/bin/c++")
+set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+
+#手动设置cuda路径
+include_directories("/usr/local/cuda/include")
+file(GLOB CUDALIB "/usr/local/cuda/lib64/*.so" "/usr/local/cuda/extras/CUPTI/lib64/*.so" "/usr/local/cuda/targets/x86_64-linux/lib/*.so")
 
 ```
 ### 3.3 基本实例
@@ -631,10 +725,13 @@ mkdir build
 cd build
 # 编译
 cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
+# 如果要安装ffmpeg依赖来读取视频
+
+cmake -D CMAKE_BUILD_TYPE=Release -D WITH_FFMPEG=ON -D CMAKE_INSTALL_PREFIX=/usr/local ..
+
 make -j8
 # 安装，注意加sudo因为会安装在/usr/local/lib
 sudo make install
-
 
 # 错误解决
 # /usr/bin/ld: ../../lib/libopencv_imgcodecs.so.4.4.0: undefined reference to `opj_stream_default_create' 请下载openjpg，源码安装
@@ -883,19 +980,28 @@ Mat detectionMat(prob.size[2], prob.size[3], CV_32F, prob.ptr<float>());
 * 解压
 ```bash
 tar -zxvf
+# 解压后当成动态库来调就好了
 ```
-* 配置环境变量
+* 配置环境变量(不需要)
 ```bash
 vim ~/.bashrc
-export LD_LIBRARY_PATH=/path/to/TensorRT-7.2.3.4/lib:$LD_LIBRARY_PATH
-export LIBRARY_PATH=/path/to/TensorRT-7.2.3.4/lib::$LIBRARY_PATH
+export LD_LIBRARY_PATH=/path/to/TensorRT-8.2.3.0/lib:$LD_LIBRARY_PATH
+export LIBRARY_PATH=/path/to/TensorRT-8.2.3.0/lib::$LIBRARY_PATH
+source ~/.bashrc
 ```
-* 测试
+* 测试(不需要)
 ```bash
 cd samples
 make -j
 cd ../bin
 ./sample_mnist
+```
+
+#### 6.1.3 python API
+```
+pip install pycuda
+cd TensorRT-8.2.3.0/python/
+pip install tensorrt-8.2.3.0-cp39-none-linux_x86_64.whl
 ```
 ### 6.2 use
 
@@ -983,3 +1089,22 @@ find /usr -name libstdc++.so*
 
 ```
 
+### 9.2.4 undefined reference to `lgammaf@GLIBC_2.23'
+**问题分析：** glibc版本过低
+**解决办法1：手动升级glibc**
+注意glibc是linux系统中最底层的api，几乎其它任何运行库都会依赖于glibc，升级具有极大风险。
+先备份一下
+```bash
+cd /lib64
+find ./ -name 'libc.so'
+find ./ -name '*ld*so*'
+# cp 一下到其他地方
+```
+
+## 9.3 windows-bug
+### error LNK2019: 无法解析的外部符号 “void __cdecl cv::imshow(class 
+**问题分析：** 存在几种情况
+1.dll没有链接正确
+2.dll版本没有选择正确，release,debug
+3.编译器没选择对，如X64，X86等
+**解决办法：请一一排除**

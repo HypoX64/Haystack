@@ -1,4 +1,44 @@
-[top]
+[toc]
+### 编译
+```bash
+yum install nasm
+git clone https://code.videolan.org/videolan/x264.git
+git clone https://bitbucket.org/multicoreware/x265_git.git
+
+cd x264
+./configure --enable-static --enable-shared
+make
+make install
+
+cd x265_git
+cd build/linux
+sh make-Makefiles.bash
+make
+make install
+
+vim ~/.bashrc
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
+source ~/.bashrc
+
+wget https://ffmpeg.org/releases/ffmpeg-4.4.1.tar.gz
+tar zxvf ffmpeg-4.4.1.tar.gz
+cd ffmpeg-4.4.1
+
+./configure --enable-shared --enable-gpl --enable-libx264 --enable-libx265 --prefix=/usr/local
+
+make -j8
+make install 
+# ffmpeg和ffprobe安装在/usr/local/bin，最好去掉连接到full的预编译版本
+
+
+# 这里.so没有帮忙拷贝 很坑(搞错了，不好意，嘿嘿，不用理)
+# mkdir lib
+# scp -r */*.so* ./lib
+# ls lib
+
+
+```
+
 ### Base
 ```bash
 -vf crop=600:600:600:0 # 剪裁, 输出w,h，开始裁剪的w，h

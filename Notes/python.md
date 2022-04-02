@@ -1,4 +1,47 @@
-[TOC]
+- [Python](#python)
+  - [base](#base)
+    - [main](#main)
+    - [for](#for)
+    - [sort](#sort)
+    - [read and write txt](#read-and-write-txt)
+    - [csv](#csv)
+    - [random](#random)
+    - [path&file](#pathfile)
+    - [time](#time)
+    - [MulticoreOptimization(concurrent.futures)](#multicoreoptimizationconcurrentfutures)
+    - [re](#re)
+    - [multiprocessing](#multiprocessing)
+    - [print](#print)
+    - [threading](#threading)
+    - [argparse](#argparse)
+    - [Try](#try)
+  - [numpy](#numpy)
+  - [scipy](#scipy)
+  - [pipreqs](#pipreqs)
+  - [pyinstaller](#pyinstaller)
+  - [opencv-python](#opencv-python)
+    - [imread](#imread)
+    - [resize](#resize)
+    - [fill](#fill)
+    - [imshow](#imshow)
+    - [imwrite](#imwrite)
+    - [split&merge](#splitmerge)
+  - [matplotlib](#matplotlib)
+    - [colors  markers](#colors--markers)
+    - [3d+scatter](#3dscatter)
+  - [pytorch](#pytorch)
+    - [hello](#hello)
+    - [save and load](#save-and-load)
+    - [def network](#def-network)
+    - [Multi-GPU (DataParallel)](#multi-gpu-dataparallel)
+  - [tensorflow](#tensorflow)
+- [Anaconda](#anaconda)
+  - [install](#install)
+    - [basic commands](#basic-commands)
+    - [solution](#solution)
+    - [换源](#换源)
+    - [PowerShell 中激活anaconda的虚拟python环境](#powershell-中激活anaconda的虚拟python环境)
+    - [启动“powershell.exe”时出现错误 0x80070002](#启动powershellexe时出现错误-0x80070002)
 # Python
 ## base
 ### main
@@ -264,11 +307,24 @@ t.start()
 ```python
 import argparse
 import sys
-parse=argparse.ArgumentParser()
-parse.add_argument("--savedir",type=str,default='./',help="Dir to save 'data'")
-args , _ = parse.parse_known_args(sys.argv[1:])
-SAVEDIR = args.savedir
+parser=argparse.ArgumentParser()
+parser.add_argument("--savedir",type=str,default='./',help="Dir to save 'data'")
+opt = parser.parse_args()
+SAVEDIR = opt.savedir
 ```
+
+### Try
+```python
+try:
+<语句>        #运行别的代码
+except <名字>：
+<语句>        #如果在try部份引发了'name'异常
+except <名字>，<数据>:
+<语句>        #如果引发了'name'异常，获得附加的数据
+else:
+<语句>        #如果没有异常发生
+```
+
 ## numpy
 [参考手册](https://docs.scipy.org/doc/numpy-1.17.0/reference/)
 * zeros/ones
@@ -307,6 +363,7 @@ data = data[np.argsort(data[:,0])]
 三维
 A.transpose((0,1,2))  #保持A不变
 A.transpose((1,0,2))  #将 0轴 和 1轴 交换
+
 ## scipy
 [参考手册](https://docs.scipy.org/doc/scipy-1.4.1/reference/)
 ## pipreqs
@@ -654,6 +711,9 @@ channels:
   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
   - defaults
 show_channel_urls: true
+
+# 设置不自动激活
+conda config --set auto_activate_base false
 ```
 ### PowerShell 中激活anaconda的虚拟python环境
 

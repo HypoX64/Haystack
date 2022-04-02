@@ -109,7 +109,7 @@ def main():
         img = imread(path)
         h,w,ch = img.shape
         if (h>maxsize)&(w>maxsize):
-            img = cv2.resize(img,(int(w/2),int(h/2)),cv2.INTER_AREA)
+            img = cv2.resize(img,(int(w/2),int(h/2)),cv2.INTER_CUBIC)
             t=threading.Thread(target=cv2.imwrite,args=(path, img,))  #t为新创建的线程
             t.start()
             cnt += 1

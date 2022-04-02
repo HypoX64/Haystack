@@ -1,4 +1,57 @@
-[TOC]
+- [用户](#用户)
+  - [查看当前所有用户](#查看当前所有用户)
+  - [添加用户](#添加用户)
+  - [更改密码](#更改密码)
+  - [更改用户权限](#更改用户权限)
+  - [删除用户](#删除用户)
+- [文件管理相关](#文件管理相关)
+  - [删除文件](#删除文件)
+  - [cp  mv(改文件名也用这个)](#cp--mv改文件名也用这个)
+  - [文件夹权限](#文件夹权限)
+  - [压缩解压](#压缩解压)
+  - [查找文件](#查找文件)
+  - [统计文件数量](#统计文件数量)
+  - [统计文件占用空间大小](#统计文件占用空间大小)
+  - [软链接](#软链接)
+- [硬件及驱动](#硬件及驱动)
+  - [安装显卡驱动](#安装显卡驱动)
+  - [CUDA Cudnn](#cuda-cudnn)
+  - [分区/挂载U盘/硬盘](#分区挂载u盘硬盘)
+    - [分区](#分区)
+    - [挂载](#挂载)
+    - [开机自动挂载](#开机自动挂载)
+- [linux应用相关](#linux应用相关)
+  - [vim](#vim)
+  - [goldendict](#goldendict)
+- [包管理工具](#包管理工具)
+  - [apt](#apt)
+  - [yum](#yum)
+- [常用系统命令](#常用系统命令)
+  - [配置环境变量](#配置环境变量)
+  - [deb](#deb)
+  - [date](#date)
+  - [shell 中运行基本应用](#shell-中运行基本应用)
+  - [批量杀死应用](#批量杀死应用)
+  - [进程暂停与继续](#进程暂停与继续)
+  - [调整CPU性能模式](#调整cpu性能模式)
+  - [添加或禁用开机启动项](#添加或禁用开机启动项)
+- [远程相关](#远程相关)
+  - [ssh](#ssh)
+  - [ssh-windows-server](#ssh-windows-server)
+  - [ssh-windows 免密登录 linux](#ssh-windows-免密登录-linux)
+  - [rdesktop(Windows远程桌面)](#rdesktopwindows远程桌面)
+  - [transmit files](#transmit-files)
+  - [smb共享设置](#smb共享设置)
+- [常见系统故障](#常见系统故障)
+  - [百度盘 无法登录](#百度盘-无法登录)
+  - [nvidia-smi command not found显卡驱动故障](#nvidia-smi-command-not-found显卡驱动故障)
+  - [ERROR：gzip: stdout: No space left on device(boot空间不足)](#errorgzip-stdout-no-space-left-on-deviceboot空间不足)
+  - [ssh连接使用方向键出现乱码](#ssh连接使用方向键出现乱码)
+  - [ssh秘钥失效](#ssh秘钥失效)
+  - [OSError: [Errno 24] Too many open files](#oserror-errno-24-too-many-open-files)
+- [Windows](#windows)
+  - [无法启用可选诊断数据](#无法启用可选诊断数据)
+- [WSL](#wsl)
 ### 用户
 #### 查看当前所有用户
 cat /etc/passwd
@@ -70,24 +123,26 @@ apt-get install p7zip-full #安装
 7za a -t7z -mx=9 -m0=lzma2 -mmt=48 -r Mytest.7z ./test #压缩
 # -mx:压缩等级，9是极限压缩，-m0：压缩算法，-mmt：使用的线程数
 
+#.tar.gz 
+tar zxvf filename.tar.gz #.tar.gz 和 .tgz 解压 
+tar zcvf filename.tar.gz dirname #.tar.gz 和 .tgz 压缩 
+tar cvf - filename | pigz > filename.tar.gz #.tar.gz 多线程压缩
+
 #.tar   .tar.xz
-tar xvf filename.tar #.tar 解包 
 tar cvf filename.tar dirname #.tar 打包 
+tar xvf filename.tar #.tar 解包 
+
 tar cvzf - filedir | split -d -b 50m - filename #.tar 分卷打包 
 cat x* > myzip.tar.gz #.tar 分卷解包
+
 tar xzvf myzip.tar.gz
 tar -xvf  压缩文件 -C  /指定目录  #解压到指定目录
-
+	
 
 #.gz
 gunzip filename.gz #.gz 解压1 
 gzip -d filename.gz #.gz 解压2 
 gzip filename #.gz 压缩 
-
-#.tar.gz 
-tar zxvf filename.tar.gz #.tar.gz 和 .tgz 解压 
-tar zcvf filename.tar.gz dirname #.tar.gz 和 .tgz 压缩 
-tar cvf - filename | pigz > filename.tar.gz #.tar.gz 多线程压缩
 
 #zip
 unzip filename.zip  -d filedir #.zip 解压 
