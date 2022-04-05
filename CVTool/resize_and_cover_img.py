@@ -1,4 +1,6 @@
+import argparse
 import os
+import time
 import cv2
 import shutil
 import datetime
@@ -84,12 +86,24 @@ def picture_select(file_list):
             imgpath_list.append(pic)
     return imgpath_list
 
+def cover_img(file_path,img):
+    os.remove(file_path)
+    cv2.imwrite(file_path.replace('.png','.jpg'),img)
+
+
+parser=argparse.ArgumentParser()
+parser.add_argument("--dir",type=str,default='./',help="Dir to save 'data'")
+parser.add_argument("--maxsize",type=int,default=2500,help="")
+parser.add_argument("--maxstorage",type=float,default=3.0,help="")
+
+opt = parser.parse_args()
+
+
 def main():
 
-    filedir =input("filedir:").strip()
-    filedir=str(filedir.replace("'",""))
-    maxsize=int(input("maxsize threshold value(min(h,w)):").strip())
-    maxstorage = float(input("maxstorage threshold value(mb):").strip())
+    filedir = opt.dir
+    maxsize = opt.maxsize
+    maxstorage = opt.maxstorage
     #recommend:2500 2.0  / 2000 2.0
 
     file_list = util.Traversal(filedir)
@@ -104,21 +118,21 @@ def main():
     finalstorage=0.0
 
     for i,path in enumerate(imgpath_list,1):
-        # try:
-        originalstorage += os.path.getsize(path)
-        img = imread(path)
-        h,w,ch = img.shape
-        if (h>maxsize)&(w>maxsize):
-            img = cv2.resize(img,(int(w/2),int(h/2)),cv2.INTER_CUBIC)
-            t=threading.Thread(target=cv2.imwrite,args=(path, img,))  #t为新创建的线程
-            t.start()
-            cnt += 1
-        elif (os.path.getsize(path)>1024*1024*maxstorage):
-            t=threading.Thread(target=imwrite,args=(path, img,))  #t为新创建的线程
-            t.start()
-            cnt += 1
-        # except:
-        #     print(path,'Falled!')
+        try:
+            originalstorage += os.path.getsize(path)
+            img = imread(path)
+            h,w,ch = img.shape
+            if (h>maxsize)&(w>maxsize):
+                img = cv2.resize(img,(int(w/2),int(h/2)),cv2.INTER_LANCZOS4)
+                t=threading.Thread(target=cover_img,args=(path, img,))  #t为新创建的线程
+                t.start()
+                cnt += 1
+            elif (os.path.getsize(path)>1024*1024*maxstorage):
+                t=threading.Thread(target=cover_img,args=(path, img,))  #t为新创建的线程
+                t.start()
+                cnt += 1
+        except:
+            print(path,'Falled!')
 
 
         if i%100==0:
@@ -126,9 +140,11 @@ def main():
             print(i,'is finished','resize:',cnt,' Cost time:',(endtime-starttime_show).seconds,'s')
             starttime_show = datetime.datetime.now()
     
+    time.sleep(1)
     for i,path in enumerate(imgpath_list,1):
         try:
-            finalstorage += os.path.getsize(path)
+            print(path.replace('.png','.jpg'))
+            finalstorage += os.path.getsize(path.replace('.png','.jpg'))
         except:
             print(path,'Falled!')
 
