@@ -143,7 +143,6 @@ def main():
     time.sleep(1)
     for i,path in enumerate(imgpath_list,1):
         try:
-            print(path.replace('.png','.jpg'))
             finalstorage += os.path.getsize(path.replace('.png','.jpg'))
         except:
             print(path,'Falled!')

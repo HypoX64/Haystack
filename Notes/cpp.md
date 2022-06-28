@@ -1053,11 +1053,11 @@ cmake -DInferenceEngine_DIR=/path/to/openvino/build/ .
 ### 9.1 gdb调试
 
 ### 9.2 bug
-### 9.2.1 file format not recognized; treating as linker script
+#### 9.2.1 file format not recognized; treating as linker script
 问题说明:软链接失效，进入相应目录查看```ls -l```是否存在相应的软链接
 解决办法:重新链接
 
-### 9.2.2 undefined reference to `std::
+#### 9.2.2 undefined reference to `std::
 * undefined reference to 'std::cout'
 **问题分析：**
 使用gcc 编译c++ 代码时需要链接-lstdc++  ```gcc main.cpp -lstdc++ -o main.o```
@@ -1069,14 +1069,14 @@ link_libraries(stdc++)           # cmake
 # 2.替换为g++编译
 ```
 
-### 9.2.3 undefined reference to `Json::Reader::parse或类似的无法调用
+#### 9.2.3 undefined reference to `Json::Reader::parse或类似的无法调用
 * undefined reference to `Json::Value::toStyledString[abi:cxx11]() const'
 **问题分析：**
 编译库使用了不同版本的gcc或者环境有所改变
 **解决办法：**
 重新编译该库
 
-### 9.2.4 GLIBCXX_3.4.20' not found
+#### 9.2.4 GLIBCXX_3.4.20' not found
 * /lib64/libstdc++.so.6: version `GLIBCXX_3.4.20' not found (required by 
 **问题分析：**
 手动升级到了gcc版本后新的动态库没有替换旧版本的动态库。
@@ -1089,9 +1089,9 @@ find /usr -name libstdc++.so*
 
 ```
 
-### 9.2.4 undefined reference to `lgammaf@GLIBC_2.23'
+#### 9.2.4 undefined reference to `lgammaf@GLIBC_2.23'
 **问题分析：** glibc版本过低
-**解决办法1：手动升级glibc**
+**解决办法1：手动升级glibc，最好不要动**
 注意glibc是linux系统中最底层的api，几乎其它任何运行库都会依赖于glibc，升级具有极大风险。
 先备份一下
 ```bash
@@ -1101,10 +1101,71 @@ find ./ -name '*ld*so*'
 # cp 一下到其他地方
 ```
 
-## 9.3 windows-bug
-### error LNK2019: 无法解析的外部符号 “void __cdecl cv::imshow(class 
+### 9.3 windows-bug
+#### 9.3.1 error LNK2019: 无法解析的外部符号 “void __cdecl cv::imshow(class 
 **问题分析：** 存在几种情况
 1.dll没有链接正确
 2.dll版本没有选择正确，release,debug
 3.编译器没选择对，如X64，X86等
 **解决办法：请一一排除**
+
+## 10. Util
+### 10.1 Traverse files
+```c++
+void getSuffix(const std::string& str, std::string& suffix)
+{
+	int pos = str.find_last_of('.');
+	if(pos == -1) {
+		suffix = "";
+		return;
+	}
+	suffix = str.substr(pos+1);
+}
+
+// 遍历测试文件
+void walkFiles(const string path, vector<string>& files, const vector<string>& filter={}){
+
+	DIR *dir;
+	struct dirent *ptr;
+	dir = opendir(path.c_str());
+	if(!dir){
+		cout<<"open dir error!"<<endl;
+		return;
+	}
+	while((ptr = readdir(dir)) != NULL){
+		if(strcmp(ptr->d_name,".") == 0 || strcmp(ptr->d_name,"..") == 0)    ///current dir OR parrent dir
+			continue;
+		else if(ptr->d_type == 8){    ///file
+			if (filter.size() == 0){
+				files.push_back(path + "/" + ptr->d_name);
+			}
+			else{
+				string suffix;
+				getSuffix(ptr->d_name, suffix);
+				if (find(filter.begin(), filter.end(), suffix) != filter.end()){
+					files.push_back(path + "/" + ptr->d_name);
+				}
+			}
+		}
+		else if(ptr->d_type == 10){    ///link file
+
+		}
+		else if(ptr->d_type == 4){    ///dir
+			// files.push_back(path + "/" + ptr->d_name);
+			walkFiles(path+"/"+ptr->d_name, files,filter);
+		}
+	}
+	closedir(dir);
+}
+```
+### time
+```cpp
+std::string getDatetime()
+{
+	time_t t = time(0);
+	struct tm *now = localtime(&t);
+	char buf[64];
+	sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d", now->tm_year + 1900, now->tm_mon + 1, now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
+	return buf;
+}
+```

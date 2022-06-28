@@ -198,7 +198,7 @@ for path in tqdm(deal_list):
 
     deal_list[path]['save_path'] = save_path
     makedirs(os.path.split(save_path)[0])
-    ffmpeg = 'ffmpeg -y'
+    ffmpeg = 'ffmpeg -y -vsync 0'
     
     if opt.bin != '':
         ffmpeg = 'PATH='+opt.bin+' && '+ffmpeg
