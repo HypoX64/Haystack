@@ -1,5 +1,5 @@
 '''
-Delete duplicate files bt MD5 and name
+Delete duplicate files by MD5 and name
 '''
 import hashlib
 import os
