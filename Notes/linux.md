@@ -128,7 +128,8 @@ tar zxvf filename.tar.gz #.tar.gz 和 .tgz 解压
 tar zcvf filename.tar.gz dirname #.tar.gz 和 .tgz 压缩 
 tar cvf - filename | pigz > filename.tar.gz #.tar.gz 多线程压缩
 
-#.tar   .tar.xz
+#.tar
+# -v选项。这个选项告诉tar文件在终端被解压时，显示压缩包里面的文件名。
 tar cvf filename.tar dirname #.tar 打包 
 tar xvf filename.tar #.tar 解包 
 
@@ -137,7 +138,9 @@ cat x* > myzip.tar.gz #.tar 分卷解包
 
 tar xzvf myzip.tar.gz
 tar -xvf  压缩文件 -C  /指定目录  #解压到指定目录
-	
+
+# .tar.xz
+tar -xvf archive.tar.xz 
 
 #.gz
 gunzip filename.gz #.gz 解压1 
@@ -481,6 +484,21 @@ scp root@www.test.com:/val/test/test.tar.gz /val/test/test.tar.gz
 scp /val/test.tar.gz root@www.test.com:/val/test.tar.gz
 #把远程的目录复制到本地
 scp -r root@www.test.com:/val/test/ /val
+
+#复制文件但跳过已有文件
+rsync -aqzu /root/client/   root@202.112.23.12:/home/work/
+-v, --verbose 详细模式输出
+-q, --quiet 精简输出模式
+-c, --checksum 打开校验开关，强制对文件传输进行校验
+-a, --archive 归档模式，表示以递归方式传输文件，并保持所有文件属性，等于-rlptgoD
+-r, --recursive 对子目录以递归模式处理
+-R, --relative 使用相对路径信息
+-u, --update 仅仅进行更新，也就是跳过所有已经存在于DST，并且文件时间晚于要备份的文件。(不覆盖更新的文件)
+-t, --times 保持文件时间信息 
+
+-a : 递归到目录，即复制所有文件和子目录。此外，打开存档模式和所有其他选项 (-rlptgoD)
+-v : 详细输出
+-e ssh : 使用ssh作为远程shell，以便对所有内容进行加密
 ```
 #### smb共享设置
 * 安装smb
@@ -605,6 +623,14 @@ New-ItemProperty -Path $path -Name MaxTelemetryAllowed -Value $value -Type Dword
 
 
 ### WSL
+* 安装
+
+```bash
+# 1.开启子系统服务
+# Windows PowerShell（管理员）
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+# 2.在应用商店安装ubuntu
+```
 * 查看wsl版本
 ```bash
 wsl -l -v
@@ -685,3 +711,6 @@ netsh advfirewall firewall add rule name=WSL2 dir=in action=allow protocol=TCP l
 ssh hypo@172.31.73.5 -p 2222
 
 ```
+
+* 在WSL上挂载Windows SMB远程驱动器
+https://www.jianshu.com/p/da1eb1a7e1fc

@@ -61,6 +61,11 @@ PATH=/bin:/usr/bin:/usr/local/bin #指定路径
 ```bash
 ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nokey=1:noprint_wrappers=1 input.mp4
 ```
+### 改变播放速度
+```bash
+# 60->30fps 且不丢帧
+ffmpeg -i rgb_strm_04.mp4 -an -r 30 -filter:v "setpts=2*PTS" out.mp4
+```
 
 ### 图片转视频
 ```
@@ -125,9 +130,14 @@ def run(args,mode = 0):
         sout = p.stdout.readlines()
         return sout
 
-def splice_video(video_paths,video_shape,splice_shape,output_path,fps):
+def splice_video(video_paths,video_shape,splice_shape,output_path,bin=''):
     h,w = video_shape
     o_h_num,o_w_num = splice_shape
+    args = []
+    if bin != '':
+        bin = 'PATH='+bin+' && '
+    args.append(bin)
+    args.append('ffmpeg -y')
 
     for path in video_paths[:o_h_num*o_w_num]:
         args.append('-i '+path)
@@ -138,20 +148,20 @@ def splice_video(video_paths,video_shape,splice_shape,output_path,fps):
     for i in range(o_h_num*o_w_num):
         args.append('[{0:s}:v] setpts=PTS-STARTPTS,scale={1:s}x{2:s} [p{3:s}];'.format(str(i),str(w),str(h),str(i)))
 
-    for x in range(o_h_num):
-        for y in range(o_w_num):
-            if x == o_h_num-1 and y == o_w_num -1:
+    for x in range(o_w_num):
+        for y in range(o_h_num):
+            if x == o_w_num-1 and y == o_h_num -1:
                 args.append('[tmp{0:d}][p{1:d}] overlay=shortest=1:x={2:d}:y={3:d}"'.format(
-                    x*o_h_num+y,x*o_h_num+y,x*w,y*h))
+                    x*o_w_num+y,x*o_w_num+y,x*w,y*h))
             else:
                 args.append('[tmp{0:d}][p{1:d}] overlay=shortest=1:x={2:d}:y={3:d}[tmp{4:d}];'.format(
-                    x*o_h_num+y,x*o_h_num+y,x*w,y*h,x*o_h_num+y+1))
+                    x*o_w_num+y,x*o_w_num+y,x*w,y*h,x*o_w_num+y+1))
 
     args += [
             '-pix_fmt','yuv420p',
             '-vcodec','libx264',
             '-crf','18',
-            output_path,
+            output_path
     ]
 
     print(args2cmd(args))

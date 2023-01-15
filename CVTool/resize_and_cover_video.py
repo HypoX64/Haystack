@@ -1,8 +1,10 @@
-import os,json
-import subprocess
 import argparse
+import json
+import os
+import subprocess
 import sys
 import time
+
 # ffmpeg 3.4.6
 from tqdm import tqdm
 
@@ -117,7 +119,7 @@ parser.add_argument("--cover_thr", type=float,default=0.7,help="cover when outpu
 parser.add_argument("--y", action='store_true', help='')
 parser.add_argument("--bin", type=str, default='',help='where is the ffmpeg /usr/local/bin/ /bin:/usr/bin:/usr/local/bin')
 parser.add_argument("--max_rate_l1",type=float,default=0.002,help="max_bit_rate  0.0020 -> 1080P 4147kbps")
-parser.add_argument("--max_rate_l2",type=int,default=0.005,help="max_bit_rate  0.0050 -> 1080P 10368kbps")
+parser.add_argument("--max_rate_l2",type=float,default=0.005,help="max_bit_rate  0.0050 -> 1080P 10368kbps")
 
 parser.add_argument("--max_size",type=int,default=9999,help="if video size >max_size, resize it to 1/2")
 

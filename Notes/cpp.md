@@ -1007,6 +1007,19 @@ pip install tensorrt-8.2.3.0-cp39-none-linux_x86_64.whl
 
 ## 7 [libtorch](https://pytorch.org/tutorials/advanced/cpp_frontend.html)
 
+### 7.1 build from source
+```bash
+git clone --recursive https://github.com/pytorch/pytorch.git
+git checkout <chosen tag>
+git submodule sync
+git submodule update --init --recursive
+
+mkdir build
+cd build
+python3 ../tools/build_libtorch.py
+```
+https://blog.csdn.net/weixin_44873133/article/details/121917850
+
 ## 8 [openvino](https://github.com/openvinotoolkit/openvino/wiki/BuildingForLinux)
 ### 8.1 install 
 ```bash
@@ -1049,15 +1062,45 @@ cmake -DInferenceEngine_DIR=/path/to/openvino/build/ .
 * 2.infer函数
 * 3.输出输出既可以的cv::mat 也可以是vector
 
-## 9 c++工程常见问题
-### 9.1 gdb调试
+## 9 open3d
+### 9.1 install
+```bash
+yum install fmt-devel.x86_64
+yum install glfw-devel.x86_64
+yum install libxrandr-dev
+yum install libXrandr.x86_64
+yum install libXrandr-devel.x86_64
+yum install libXi-devel.x86_64
+yum install libXinerama-devel.x86_64
+yum install libXcursor-devel.x86_64
+# yum install llvm7.0-devel.x86_64
+# yum install clang-devel.x86_64
+wget https://releases.llvm.org/7.0.0/libcxx-7.0.0.src.tar.xz
+tar xvf libcxx-7.0.0.src.tar.xz
+wget https://releases.llvm.org/7.0.0/libcxxabi-7.0.0.src.tar.xz
+tar xvf libcxxabi-7.0.0.src.tar.xz
+```
 
-### 9.2 bug
-#### 9.2.1 file format not recognized; treating as linker script
+编译libcxx与libcxxabi(视乎可以不用)
+[How to Build libcxx and libcxxabi by clang on CentOS 7](https://stackoverflow.com/questions/25840088/how-to-build-libcxx-and-libcxxabi-by-clang-on-centos-7)
+下载open3d预编译文件,cuda版本不可用，需自行编译
+https://github.com/isl-org/Open3D/releases
+
+如果需要自己编译open3d需自行编译llvm
+https://zhuanlan.zhihu.com/p/567939632
+
+
+
+
+## 10 c++工程常见问题
+### 10.1 gdb调试
+
+### 10.2 bug
+#### 10.2.1 file format not recognized; treating as linker script
 问题说明:软链接失效，进入相应目录查看```ls -l```是否存在相应的软链接
 解决办法:重新链接
 
-#### 9.2.2 undefined reference to `std::
+#### 10.2.2 undefined reference to `std::
 * undefined reference to 'std::cout'
 **问题分析：**
 使用gcc 编译c++ 代码时需要链接-lstdc++  ```gcc main.cpp -lstdc++ -o main.o```
@@ -1069,14 +1112,14 @@ link_libraries(stdc++)           # cmake
 # 2.替换为g++编译
 ```
 
-#### 9.2.3 undefined reference to `Json::Reader::parse或类似的无法调用
+#### 10.2.3 undefined reference to `Json::Reader::parse或类似的无法调用
 * undefined reference to `Json::Value::toStyledString[abi:cxx11]() const'
 **问题分析：**
 编译库使用了不同版本的gcc或者环境有所改变
 **解决办法：**
 重新编译该库
 
-#### 9.2.4 GLIBCXX_3.4.20' not found
+#### 10.2.4 GLIBCXX_3.4.20' not found
 * /lib64/libstdc++.so.6: version `GLIBCXX_3.4.20' not found (required by 
 **问题分析：**
 手动升级到了gcc版本后新的动态库没有替换旧版本的动态库。
@@ -1089,7 +1132,7 @@ find /usr -name libstdc++.so*
 
 ```
 
-#### 9.2.4 undefined reference to `lgammaf@GLIBC_2.23'
+#### 10.2.4 undefined reference to `lgammaf@GLIBC_2.23'
 **问题分析：** glibc版本过低
 **解决办法1：手动升级glibc，最好不要动**
 注意glibc是linux系统中最底层的api，几乎其它任何运行库都会依赖于glibc，升级具有极大风险。
@@ -1101,16 +1144,16 @@ find ./ -name '*ld*so*'
 # cp 一下到其他地方
 ```
 
-### 9.3 windows-bug
-#### 9.3.1 error LNK2019: 无法解析的外部符号 “void __cdecl cv::imshow(class 
+### 10.3 windows-bug
+#### 10.3.1 error LNK2019: 无法解析的外部符号 “void __cdecl cv::imshow(class 
 **问题分析：** 存在几种情况
 1.dll没有链接正确
 2.dll版本没有选择正确，release,debug
 3.编译器没选择对，如X64，X86等
 **解决办法：请一一排除**
 
-## 10. Util
-### 10.1 Traverse files
+## 11. Util
+### 11.1 Traverse files
 ```c++
 void getSuffix(const std::string& str, std::string& suffix)
 {

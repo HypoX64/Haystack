@@ -681,8 +681,9 @@ source ~/.bashrc
 conda --version                   #查看conda版本
 conda update conda                #更新conda
 conda create --help               #查看conda环境管理命令帮助信息
-conda create --name envname       #新建虚拟环境
-conda remove --name envname --all #删除虚拟环境
+conda create -n envname           #新建虚拟环境
+conda remove -n envname --all     #删除虚拟环境
+conda create -n BBB --clone AAA   #复制虚拟环境
 conda list                        #查看当前环境安装的包
 conda info --envs                 #查看conda环境信息
 conda activate envname            #激活环境

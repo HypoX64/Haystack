@@ -8,6 +8,9 @@ git rm -r --cached target              # 删除target文件夹
 git add *  ###如有新添加的文件执行此行，添加所有的文件
 git commit -m "输入你本次提交的文字"
 git push -u origin master
+
+# 取消上一次提交并保留修改
+git reset --soft HEAD^
 ```
 ## 常见问题
 ### git初始化
@@ -21,6 +24,9 @@ git config --global user.email 填写自己的邮箱号
 ```bash
 git config --global --unset http.proxy
 ```
+### 大文件上传
+
+
 ## 合并仓库
 大致思路是伪造远程的repo1仓库为repo2的一个分支，然后合并进来；
 若是文件有冲突、或要建立子目录，建议在repo1中先解决，再进行如上操作。

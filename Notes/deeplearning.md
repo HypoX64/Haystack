@@ -43,6 +43,58 @@ def GetLoader(opt, dataset):
                       num_workers=opt.load_thread
                       )
 ```
+### 2.2 高级使用
+#### 2.2.1 打印梯度
+```python
+for k, v in net.module.depth_optimizer.named_parameters():
+    print(k,v.grad)
+```
+#### 2.2.2 梯度阶段
+```python
+optimizer.zero_grad()
+loss.backward()
+torch.nn.utils.clip_grad_norm(net.module.parameters(),max_norm=1e-2, norm_type=2)
+optimizer.step()
+```
+#### 2.2.3 判断nan与inf，去掉他们
+```python
+
+def drop_nan_inf(tensor):
+    tensor = torch.where(torch.isnan(tensor), torch.full_like(tensor, 0), tensor)
+    tensor = torch.where(torch.isinf(tensor), torch.full_like(tensor, 1), tensor)
+    return tensor
+    
+if torch.isnan(imgs).any():
+    print('nan in imgs')
+    exit()
+if torch.isinf(imgs).any():
+    print('inf in imgs')
+    exit()
+```
+
+#### 2.2.4 记录模型运行
+```
+with torch.profiler.record_function("net"):
+    net(img)
+```
+
+#### 2.2.5 一种自适应归一化方法
+```python
+# 解决输入尺度不一致，且需要归一化到0-1直接的问题
+def normalize_depth(depth,expand=1.0):
+    bs,c,h,w = depth.shape
+    _depth = depth.view(bs,c*h*w)
+    mean = torch.mean(_depth,dim=1).view(bs,1,1,1)
+    mean = torch.clamp(mean,min=1e-3,max=1e6)
+    depth = torch.clamp((depth+mean*(expand-1)) /(mean*expand*2),0,1)
+    return depth,mean
+
+def anti_normalize_depth(depth,mean,expand=1.0):
+    depth = depth*mean*expand*2 - mean*(expand-1)
+    return depth
+```
+
+
 ### 2.7 坑
 #### 2.7.1 當DataParallel碰上RNN的那些坑
 https://meetonfriday.com/posts/d9cbeda0/
