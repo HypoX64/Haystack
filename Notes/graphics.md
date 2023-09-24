@@ -6,7 +6,7 @@ K = \begin{bmatrix}a_x & 0 & p_x \\ 0 & a_y & p_y \\ 0 & 0 & 1 \end{bmatrix}
 $$
 其中在opencv中$a_x,a_y,p_x,p_y$写作$f_x,f_y,c_x,c_y$均是指以像素为单位的。$[0,0],[1,1],[0,2],[1,2]$
 $$
-K = \begin{bmatrix}f_x & 0 & p_x \\ 0 & f_y & p_y \\ 0 & 0 & 1 \end{bmatrix}
+K = \begin{bmatrix}f_x & 0 & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1 \end{bmatrix}
 $$
 
 ### 1.2 坐标系
@@ -68,6 +68,18 @@ for i in range(0, len(Names)):
 js = json.dumps(camera_param, sort_keys=True, indent=4)
 with open('camera_param.json', 'w') as js_f:
 js_f.write(js)
+```
+#### 1.3.4 相机朝向可视化
+https://github.com/demul/extrinsic2pyramid
+一般来说相机的Z轴就是相机光轴的朝向，我们只需要在cam坐标系下给出[0,0,0]以及[0,0,1]，然后利用cam2world的pose变换回世界坐标系就可以得到对应的方向向量。
+
+```python
+poses_c2w = torch.inverse(poses)
+cam_z0 = torch.tensor([0,0,0,1],dtype=torch.float32,device=_device).view(1,4,1).repeat(6,1,1)
+cam_z1 = torch.tensor([0,0,1,1],dtype=torch.float32,device=_device).view(1,4,1).repeat(6,1,1)
+    
+world_z0 = torch.matmul(poses_c2w,cam_z0)
+world_z1 = torch.matmul(poses_c2w,cam_z1)
 ```
 
 ## 2.图形学基础知识 

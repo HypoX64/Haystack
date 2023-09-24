@@ -1004,6 +1004,81 @@ cd TensorRT-8.2.3.0/python/
 pip install tensorrt-8.2.3.0-cp39-none-linux_x86_64.whl
 ```
 ### 6.2 use
+### 6.3 pytorch->onnx->TensorRT
+#### 6.3.1 转换方法
+模型构建时需注意三方所支持的opset版本以及对某些op的特殊限制
+opset版本支持的算子：https://github.com/onnx/onnx/blob/main/docs/Operators.md
+注意Opset16已支持```GridSample```算子，极大的简化了模型的部署操作
+
+* Pytorch
+在1.12版本中已支持Opset16
+opset_version (int, default 14) – The version of the default (ai.onnx) opset to target. Must be >= 7 and <= 16
+* onnxruntime
+1.12 支持到Opset17
+https://onnxruntime.ai/docs/reference/compatibility.html
+* TensorRT
+TensorRT 8.5 supports operators up to Opset 17.
+https://github.com/onnx/onnx-tensorrt/blob/main/docs/operators.md
+```python
+# 导出
+torch.onnx.export(net, (input_a,input_b...), 'out.onnx', verbose=False, opset_version=16,
+                  input_names=['input_a','input_b','...'],
+                  output_names=['output_a','output_b','...'])
+# 需要注意的是最好保证input_a,input_b,...的第0维为batchsize，方便做动态批大小处理
+```
+#### 6.3.2 注意事项
+##### 6.3.2.1 不要对输入直接进行动态切片
+```python
+# 假设grid_coord_3HW为模型的输入
+bs,_,h,w = depth.shape
+grid_coord_3HW = grid_coord_3HW[:, :h, :w]
+# 这种操作会导致：
+```
+```bash
+ERROR: ModelImporter.cpp:732: ERROR: builtin_op_importers.cpp:4531 In function importSlice:
+[8] Assertion failed: (axes.allValuesKnown()) && "This version of TensorRT does not support dynamic axes."
+# 但是经过任意的一些操作后就可以动态切片了，离谱中的离谱
+```
+##### 6.3.2.2 高维矩阵运算精度不稳定，速度慢
+其实这是一个通病，无论在pytorch还是TensorRT中，高维矩阵运算都是特别慢且具有误差的，只是TensorRT+FP16导致的误差已经大到无法接受，接近数量级的差异，算法实现时应该尽量避免，将矩阵乘法变换到2维
+
+##### 6.3.2.3 注意算子支持的运算类型
+比如在TensorRT中```MUL(*)```操作只支持FP32, FP16, INT32, 不支持bool运算，所以在网络实现中如果运算结果出现```torch.bool```类型，请使用```.float()```进行转化后再进行```*```.
+```python
+# 举例
+def depth_filter(depth_BCHW, front = 600, back = 300):
+    mask_CHW = depth_BCHW > 0
+    depth_mean = torch.mean(depth_BCHW[mask_CHW])
+    depth_valid = (depth_BCHW < depth_mean + back) & (depth_BCHW > depth_mean - front)
+    mask_CHW = mask_CHW.float() * depth_valid.float() #先转化为float再*
+    output_depth = depth_BCHW * mask_CHW
+    return output_depth
+```
+
+##### 6.3.2.4 argmin与argmax或TopK
+```bash
+# 1.argmin与argmax
+# 这两种算子要求INT64输入，但是TensorRT有毒，对ONNX模型首先干到32位
+Your ONNX model has been generated with INT64 weights, while TensorRT does not natively support INT64. Attempting to cast down to INT32.
+# 会导致
+ERROR: onnx2trt_utils.cpp:54 In function argMinMaxHelper:
+[8] Assertion failed: (tensor.getType() != nvinfer1::DataType::kINT32) && "This version of TensorRT does not support INT32 ArgMin/ArgMax input data."
+# 就死结，唯一的解决办法是  converting my input tensor to a float data type and converting back the output to INT32
+# 结论建议不要使用
+# https://github.com/onnx/onnx-tensorrt/issues/450
+```
+##### 6.3.2.5 inverse
+```torch.inverse```不受支持，建议将inverse操作提到网络外
+
+##### 6.3.2.6 FP16
+部分网络结构对FP16非常的敏感，比如使用KRT进行投影，精度会大幅下降，这里有一种解决办法：
+https://zhuanlan.zhihu.com/p/360843851
+但是，当FP16收益不高或者很难确定溢出层时我建议直接使用FP32进行推理，很多时候溢出的层实在太多，很难查出来
+```bash
+WARNING: - 24 weights are affected by this issue: Detected subnormal FP16 values.
+WARNING: - 16 weights are affected by this issue: Detected values less than smallest positive FP16 subnormal value and converted them to the FP16 minimum subnormalized value.
+```
+
 
 ## 7 [libtorch](https://pytorch.org/tutorials/advanced/cpp_frontend.html)
 

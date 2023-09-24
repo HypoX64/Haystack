@@ -1,13 +1,16 @@
 import argparse
-import os
-import time
-import cv2
-import shutil
 import datetime
-import threading
+import os
 import platform
+import shutil
+import threading
+import time
+
+import cv2
 import numpy as np
 import util
+from skimage import io,transform
+from tqdm import tqdm
 
 system_type = 'Linux'
 if 'Windows' in platform.platform():
@@ -44,22 +47,15 @@ def imread(file_path,mod = 'normal',loadsize = 0, rgb=False):
 
     return img
 
-def resize(img,size,interpolation=cv2.INTER_LINEAR):
-    '''
-    cv2.INTER_NEAREST      最邻近插值点法
-    cv2.INTER_LINEAR        双线性插值法
-    cv2.INTER_AREA         邻域像素再取样插补
-    cv2.INTER_CUBIC        双立方插补，4*4大小的补点
-    cv2.INTER_LANCZOS4     8x8像素邻域的Lanczos插值
-    '''
-    h, w = img.shape[:2]
-    if np.min((w,h)) ==size:
-        return img
-    if w >= h:
-        res = cv2.resize(img,(int(size*w/h), size),interpolation=interpolation)
-    else:
-        res = cv2.resize(img,(size, int(size*h/w)),interpolation=interpolation)
-    return res
+def resize(img,size,interpolation=cv2.INTER_CUBIC,mode=0):
+    if mode == 0:
+        img = cv2.resize(img,size,interpolation=interpolation)
+    elif mode == 1:
+        img = transform.resize(img,(size[1],size[0]))
+        img = (img*255).astype(np.uint8)
+    return img
+    
+
 
 def imwrite(file_path,img,use_thread=False):
     '''
@@ -94,7 +90,8 @@ def cover_img(file_path,img):
 parser=argparse.ArgumentParser()
 parser.add_argument("--dir",type=str,default='./',help="Dir to save 'data'")
 parser.add_argument("--maxsize",type=int,default=2500,help="")
-parser.add_argument("--maxstorage",type=float,default=3.0,help="")
+parser.add_argument("--maxstorage",type=float,default=2.0,help="")
+parser.add_argument("--resizemode",type=int,default=0,help="0:opencv 1:skimage")
 
 opt = parser.parse_args()
 
@@ -105,47 +102,49 @@ def main():
     maxsize = opt.maxsize
     maxstorage = opt.maxstorage
     #recommend:2500 2.0  / 2000 2.0
-
+    print('Find image...')
     file_list = util.Traversal(filedir)
     imgpath_list = picture_select(file_list)
 
-    print("Find picture:"+" "+str(len(imgpath_list)))
-    print('Begining......')
+    print("Found:"+" "+str(len(imgpath_list)))
+    print('Start...')
     starttime = datetime.datetime.now()
     starttime_show = datetime.datetime.now()
     cnt=0
     originalstorage=0.0
     finalstorage=0.0
 
-    for i,path in enumerate(imgpath_list,1):
+    for path in tqdm(imgpath_list):
         try:
             originalstorage += os.path.getsize(path)
             img = imread(path)
             h,w,ch = img.shape
             if (h>maxsize)&(w>maxsize):
-                img = cv2.resize(img,(int(w/2),int(h/2)),cv2.INTER_LANCZOS4)
+                img = resize(img,(int(w/2),int(h/2)),cv2.INTER_CUBIC,mode=opt.resizemode)
                 t=threading.Thread(target=cover_img,args=(path, img,))  #t为新创建的线程
                 t.start()
                 cnt += 1
             elif (os.path.getsize(path)>1024*1024*maxstorage):
+                img = resize(img,(int(w/2),int(h/2)),cv2.INTER_CUBIC,mode=opt.resizemode)
                 t=threading.Thread(target=cover_img,args=(path, img,))  #t为新创建的线程
                 t.start()
                 cnt += 1
         except:
-            print(path,'Falled!')
+            print(path,'Process falled!')
 
 
-        if i%100==0:
-            endtime = datetime.datetime.now()
-            print(i,'is finished','resize:',cnt,' Cost time:',(endtime-starttime_show).seconds,'s')
-            starttime_show = datetime.datetime.now()
+        # if i%100==0:
+        #     endtime = datetime.datetime.now()
+        #     print(i,'is finished','resize:',cnt,' Cost time:',(endtime-starttime_show).seconds,'s')
+        #     starttime_show = datetime.datetime.now()
     
     time.sleep(1)
+    print("Calculate size...")
     for i,path in enumerate(imgpath_list,1):
         try:
             finalstorage += os.path.getsize(path.replace('.png','.jpg'))
         except:
-            print(path,'Falled!')
+            print(path,'Calculate size falled!')
 
     originalstorage = originalstorage/float(1024*1024)
     finalstorage = finalstorage/float(1024*1024)

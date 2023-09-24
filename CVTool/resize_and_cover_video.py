@@ -37,7 +37,7 @@ def is_img(path):
 def is_video(path):
     ext = os.path.splitext(path)[1]
     ext = ext.lower()
-    if ext in ['.mp4','.flv','.avi','.mov','.mkv','.wmv','.rmvb','.mts']:
+    if ext in ['.mp4','.flv','.avi','.mov','.mkv','.wmv','.rmvb','.mts','.3gp']:
         return True
     else:
         return False
@@ -67,7 +67,7 @@ def run(args,mode = 0):
 
     if mode == 0:
         cmd = args2cmd(args)
-        print(cmd)
+        # print(cmd)
         os.system(cmd)
 
     elif mode == 1:
@@ -117,6 +117,7 @@ parser.add_argument("--output",type=str,default='./tmp',help="")
 parser.add_argument("--cover", action='store_true', help='!!!Overwrites the current file!!!')
 parser.add_argument("--cover_thr", type=float,default=0.7,help="cover when output_size/input_size < cover_thr")
 parser.add_argument("--y", action='store_true', help='')
+parser.add_argument("--q", action='store_true', help='')
 parser.add_argument("--bin", type=str, default='',help='where is the ffmpeg /usr/local/bin/ /bin:/usr/bin:/usr/local/bin')
 parser.add_argument("--max_rate_l1",type=float,default=0.002,help="max_bit_rate  0.0020 -> 1080P 4147kbps")
 parser.add_argument("--max_rate_l2",type=float,default=0.005,help="max_bit_rate  0.0050 -> 1080P 10368kbps")
@@ -201,6 +202,8 @@ for path in tqdm(deal_list):
     deal_list[path]['save_path'] = save_path
     makedirs(os.path.split(save_path)[0])
     ffmpeg = 'ffmpeg -y -vsync 0'
+    if opt.q:
+        ffmpeg += ' -loglevel quiet'
     
     if opt.bin != '':
         ffmpeg = 'PATH='+opt.bin+' && '+ffmpeg
@@ -220,7 +223,8 @@ for path in tqdm(deal_list):
     if opt.r != '':
         args+=['-r',opt.r]
     args+=['"'+save_path+'"']
-    print(args)
+    if not opt.q:
+        print(args)
     run(args)
     storage = round(os.path.getsize(save_path)/(1024*1024*1024),3)
     deal_list[path]['out_storage'] = storage
@@ -234,7 +238,7 @@ if opt.cover:
             run(args)
             args = ['mv','"'+deal_list[path]['save_path']+'"','"'+os.path.split(path)[0]+'"']
             run(args)
-    os.system('rm -r '+opt.output)
+    # os.system('rm -r '+opt.output)
 
 print('Original Size:%.2fGB'%originalstorage,
       ' Final Size:%.2fGB'%finalstorage,

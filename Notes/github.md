@@ -1,33 +1,45 @@
 [TOC]
 
 # Git
-## Base
+## 1 base
 ```shell
- git pull origin master                  # 将远程仓库里面的项目拉下来
-git rm -r --cached target              # 删除target文件夹
-git add *  ###如有新添加的文件执行此行，添加所有的文件
+ git pull origin master               # 将远程仓库里面的项目拉下来
+git rm -r --cached target             # 删除target文件夹
+git add *                             #如有新添加的文件执行此行，添加所有的文件
 git commit -m "输入你本次提交的文字"
 git push -u origin master
 
-# 取消上一次提交并保留修改
-git reset --soft HEAD^
+
+git reset --soft HEAD^                 # 取消上一次提交并保留修改
+git checkout branchName                # 切换分支
+git checkout -b newBranch              # 创建并切换分支
 ```
-## 常见问题
-### git初始化
+## 2 常见问题
+### 2.1 git初始化用户信息
 ```bash
 git config --global user.name "填写自己的用户名" 
 git config --global user.email 填写自己的邮箱号      
 ```
-### Failed to connect to github.com port 443: Timed out
+### 2.2 对某个仓库单独使用某个账号
+
+### 2.3 Failed to connect to github.com port 443: Timed out
 使用了代理导致的
 执行
 ```bash
 git config --global --unset http.proxy
 ```
-### 大文件上传
-
-
-## 合并仓库
+### 2.4 大文件上传错误
+当文件过大时往往不被被允许上传，此时如果已经commit需要
+```bash
+git reset --soft HEAD^ #撤销上一次提交并保留代码
+# 编辑.gitattributes文件
+*.dll filter=lfs diff=lfs merge=lfs -text
+*.lib filter=lfs diff=lfs merge=lfs -text
+*.whl filter=lfs diff=lfs merge=lfs -text
+*.onnx filter=lfs diff=lfs merge=lfs -text
+# 再次提交
+```
+### 2.5 合并仓库
 大致思路是伪造远程的repo1仓库为repo2的一个分支，然后合并进来；
 若是文件有冲突、或要建立子目录，建议在repo1中先解决，再进行如上操作。
 example:
@@ -50,15 +62,15 @@ git checkout demo
 git merge online_repo1
 ```
 
-# Markdown
-## 表格
+## 3 基础语法
+### 3.1  表格
 |      |      |      |
 | ---- | ---- | ---- |
 |      |      |      |
 |      |      |      |
 |      |      |      |
 
-## 标题
+### 3.2 标题
 ```markdown
 大标题
 ====
@@ -71,7 +83,7 @@ git merge online_repo1
 ##### 五级标题
 ###### 六级标题
 ```
-## 列表
+### 3.3 列表
 插入圆点符号：编辑的时候使用的是星号 *，星号后面要有一个空格，否则为普通星号
 * 列表一
 * 列表二
@@ -82,7 +94,7 @@ git merge online_repo1
     * 列表二
         *列表三
 
-## 缩进
+### 3.4 缩进
 >缩进一
 >>缩进二
 >>
@@ -93,7 +105,7 @@ git merge online_repo1
 >>>>>缩进五
 
 
-## 插入链接图片
+### 3.5 插入链接图片
 [百度](http://baidu.com)
 * 插入网络图片：![](网络图片链接地址)，即叹号!+方括号[]+括号()，如果不加叹号!就会变成普通文本，方括号里可以加入一些 标识性的信息
 ![baidu](http://www.baidu.com/img/bdlogo.gif "百度logo")  
@@ -108,7 +120,7 @@ git merge online_repo1
 <div align="center">    
 <img src="http://www.baidu.com/img/bdlogo.gif " alt="image" style="zoom:50%;" />
 </div>
-## 插入代码片段
+### 3.6 插入代码片段
 插入代码片段：在代码上下行用```标记，注意`符号是tab键上面那个，要实现语法高亮，则在```后面加上编程语言的名称
 
 复制代码
@@ -119,8 +131,29 @@ public static void main(String[] args){}
 ```javascript
 document.getElementById("ts").innerHTML="Hello"
 ```
-
-## 其他
+### 3.7 流程图
+https://www.cnblogs.com/mrxiaobai-wen/p/14215875.html
+```mermaid
+graph TB
+A[AAA]-->B[BBB]-->C[CCC]
+B-->E
+A-->E
+D[DDD]-->E[EEE]-->F[FFF]
+G[GGG]
+C-->G
+F-->G-->H[HHH]
+```
+```mermaid
+graph LR
+A[AAA]-->B[BBB]-->C[CCC]
+B-->E
+A-->E
+D[DDD]-->E[EEE]-->F[FFF]
+G[GGG]
+C-->G
+F-->G-->H[HHH]
+```
+###  3.8 其他
 复制代码
 换行：使用标签<br>
 

@@ -101,8 +101,55 @@ https://meetonfriday.com/posts/d9cbeda0/
 1.將model的參數放到gpu上的時候不保證放置的memory位置一定是連續的，所以可能會有fragmentation現象，這會造成效能的降低，透過flatten_parameters()可以使得model的參數在gpu memory上的位置是連續的。
 2.因為將data放到不同的gpu上跑時，由於使用了pack_padded_sequence()和pad_packed_sequence()，每個batch的長度都是不固定的，在每張gpu上執行pad_packed_sequence()時，會取它當下batch的最大長度來對其他句子進行padding，這時因為每個gpu上data不同導致當下的最大長度都會不同，在gather的時候就會產生維度不匹配的問題。
 所以解決方法是，在使用pad_packed_sequence()時要額外帶入一個參數告訴當下最長的長度是多少，大概像這樣寫：
-#### 2.1.2 SynchronizedBatchNorm2d 多卡BatchNorm2d失效
-sync bn ，Cross-GPU Synchronized Batch Normalization，是因为多卡训练中每张卡上的batch size过小，不同步会造成BN层失效。单卡直接用原始就好了。
+#### 2.7.2 SynchronizedBatchNorm2d 多卡BatchNorm2d失效
+sync bn ，Cross-GPU Synchronized Batch Normalization，是因为多卡训练中每张卡上的batch size过小，不同步会造成BN层失效。此时要将所有的BatchNorm2d转换为SynchronizedBatchNorm2d
+```python
+net = torch.nn.SyncBatchNorm.convert_sync_batchnorm(net)
+```
+### 2.8 第三方库安装起来的疑难杂症
+#### 2.8.1 pytorch3d
+pytorch3d 0.7已经支持直接通过conda安装，请使用0.71以上版本，性能有较大提升
+```bash
+# 首先更新conda并创建环境
+conda create -n pytorch3d python=3.9.12
+conda activate pytorch3d
+# pytorch
+# conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
+conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6 -c pytorch -c conda-forge
+# pytorch3d
+conda install -c fvcore -c iopath -c conda-forge fvcore iopath
+conda install -c bottler nvidiacub
+conda install pytorch3d -c pytorch3d
+# torch_scatter
+conda install pytorch-scatter -c pyg
+# 其他依赖
+pip install -r requirements.txt
+```
+#### 2.8.2 nerfstudio
+https://github.com/nerfstudio-project/nerfstudio/tree/v0.2.2
+```bash
+# 创建环境
+conda create --name nerfstudio -y python=3.8
+conda activate nerfstudio
+python -m pip install --upgrade pip
+# 安装pytorch
+pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 -f https://download.pytorch.org/whl/torch_stable.html
+# 安装tiny-cuda-nn
+pip install ninja
+git clone --recursive https://github.com/nvlabs/tiny-cuda-nn
+cd tiny-cuda-nn
+git checkout tags/v1.6
+cd .\bindings\torch
+python setup.py install
+# 安装nerfstudio
+git clone https://github.com/nerfstudio-project/nerfstudio
+cd nerfstudio
+git checkout tags/v0.2.2
+pip install -e .
+# 测试完成安装
+ns-download-data nerfstudio --capture-name=poster
+ns-train nerfacto --data data/nerfstudio/poster
+```
 
 ## 3 TensorRT
 

@@ -137,3 +137,4 @@ output/
 /sftp-config.json
 test.py
 .vscode/
+*.json

@@ -49,6 +49,7 @@ source ~/.bashrc
 -s 360x360             # 改变分辨率
 -vf scale=iw/2:ih/2    # 分辨率缩小一倍
 -filter_complex hstack # 水平拼接两个视频
+-filter_complex hstack # 竖直拼接两个视频
 -filter:a "volume=1.5" # 音量
 -ar 48000              # 音频采样率
 -vcodec libx264 -crf 18 -pix_fmt yuv420p

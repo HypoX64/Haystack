@@ -125,6 +125,7 @@ apt-get install p7zip-full #安装
 
 #.tar.gz 
 tar zxvf filename.tar.gz #.tar.gz 和 .tgz 解压 
+tar zxvf filename.tar.gz -C  /指定目录
 tar zcvf filename.tar.gz dirname #.tar.gz 和 .tgz 压缩 
 tar cvf - filename | pigz > filename.tar.gz #.tar.gz 多线程压缩
 
