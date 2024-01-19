@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import hashlib
 import os
 import platform
 import shutil
@@ -11,6 +12,7 @@ import numpy as np
 import util
 from skimage import io,transform
 from tqdm import tqdm
+import json
 
 system_type = 'Linux'
 if 'Windows' in platform.platform():
@@ -86,18 +88,38 @@ def cover_img(file_path,img):
     os.remove(file_path)
     cv2.imwrite(file_path.replace('.png','.jpg'),img)
 
+def get_md5_from_file(path,blocksize=1024*64):
+    try:
+        f = open(path, "rb")
+        f.seek(0)
+        data = f.read(blocksize)
+        md5_value = hashlib.md5(data).hexdigest()
+    except:
+        md5_value = '0'
+    return md5_value
+
+def write_json(json_path,dict_data):
+    with open(json_path,'w') as f:
+        json.dump(dict_data,f,indent=4,ensure_ascii=False)
 
 parser=argparse.ArgumentParser()
 parser.add_argument("--dir",type=str,default='./',help="Dir to save 'data'")
-parser.add_argument("--maxsize",type=int,default=2500,help="")
+parser.add_argument("--maxsize",type=int,default=2500,help="min(height,width)>maxsize")
 parser.add_argument("--maxstorage",type=float,default=2.0,help="")
-parser.add_argument("--resizemode",type=int,default=0,help="0:opencv 1:skimage")
-
+parser.add_argument("--resizemode",type=int,default=1,help="0:opencv 1:skimage")
 opt = parser.parse_args()
 
+opt.dir = os.path.abspath(opt.dir)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+json_path = os.path.join(script_dir,'image.json')
+if not os.path.isfile(json_path):
+    _data = {}
+    with open(json_path,'w') as f:
+        json.dump(_data,f,indent=4)
+with open(json_path,'r') as f:
+    image_processed_infos = json.load(f)
 
 def main():
-
     filedir = opt.dir
     maxsize = opt.maxsize
     maxstorage = opt.maxstorage
@@ -109,35 +131,36 @@ def main():
     print("Found:"+" "+str(len(imgpath_list)))
     print('Start...')
     starttime = datetime.datetime.now()
-    starttime_show = datetime.datetime.now()
     cnt=0
     originalstorage=0.0
     finalstorage=0.0
 
     for path in tqdm(imgpath_list):
-        try:
-            originalstorage += os.path.getsize(path)
-            img = imread(path)
-            h,w,ch = img.shape
-            if (h>maxsize)&(w>maxsize):
-                img = resize(img,(int(w/2),int(h/2)),cv2.INTER_CUBIC,mode=opt.resizemode)
-                t=threading.Thread(target=cover_img,args=(path, img,))  #t为新创建的线程
-                t.start()
-                cnt += 1
-            elif (os.path.getsize(path)>1024*1024*maxstorage):
-                img = resize(img,(int(w/2),int(h/2)),cv2.INTER_CUBIC,mode=opt.resizemode)
-                t=threading.Thread(target=cover_img,args=(path, img,))  #t为新创建的线程
-                t.start()
-                cnt += 1
-        except:
-            print(path,'Process falled!')
+        md5_value = get_md5_from_file(path)
+        if md5_value not in image_processed_infos:
+            try:
+                this_storage = os.path.getsize(path)
+                originalstorage += this_storage
+                img = imread(path)
+                h,w,ch = img.shape
+                if (h>maxsize)&(w>maxsize):
+                    img = resize(img,(int(w/2),int(h/2)),cv2.INTER_CUBIC,mode=opt.resizemode)
+                    t=threading.Thread(target=cover_img,args=(path, img,))  #t为新创建的线程
+                    t.start()
+                    cnt += 1
+                elif (this_storage>1024*1024*maxstorage):
+                    img = resize(img,(int(w/2),int(h/2)),cv2.INTER_CUBIC,mode=opt.resizemode)
+                    t=threading.Thread(target=cover_img,args=(path, img,))  #t为新创建的线程
+                    t.start()
+                    cnt += 1
+                image_processed_infos[md5_value] = {
+                    'name': path,
+                    'size': round(this_storage/float(1024*1024),2),
+                    'resolution':str(w)+'x'+str(h),
+                }
+            except:
+                print(path,'Process falled!')
 
-
-        # if i%100==0:
-        #     endtime = datetime.datetime.now()
-        #     print(i,'is finished','resize:',cnt,' Cost time:',(endtime-starttime_show).seconds,'s')
-        #     starttime_show = datetime.datetime.now()
-    
     time.sleep(1)
     print("Calculate size...")
     for i,path in enumerate(imgpath_list,1):

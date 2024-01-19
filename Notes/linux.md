@@ -119,7 +119,7 @@ chmod -R 777 file #4是读权限，2是写权限，1是可执行权限，777就�
 ```bash
 #7z
 apt-get install p7zip-full #安装
-7z x file.7z #解压
+7z x file.7z #解压(支持分卷，解压7z.001即可)
 7za a -t7z -mx=9 -m0=lzma2 -mmt=48 -r Mytest.7z ./test #压缩
 # -mx:压缩等级，9是极限压缩，-m0：压缩算法，-mmt：使用的线程数
 
@@ -478,6 +478,7 @@ rdesktop -u Administrator -p password ip -g 1280x720
 #压缩+解压流传输 把本地的文件复制到远程主机上
 tar -c './dir' |pigz |ssh hypo@172.31.73.116 "gzip -d|tar -xC /home/hypo/MyProject"
 tar -c './DeepMosaics' |pigz |ssh hypo@172.30.194.156 "gzip -d|tar -xC /media/hypo/Project/MyProject/DeepMosaics"
+tar -c 'zcam_20230828_undist' | pigz | ssh root@11.214.20.224 "gzip -d | tar -xC /dockerdata/hypolei/datasets/mvs_60fps"
 
 #把远程的文件复制到本地
 scp root@www.test.com:/val/test/test.tar.gz /val/test/test.tar.gz
