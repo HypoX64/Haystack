@@ -30,7 +30,7 @@ def Traversal(filedir):
 def is_img(path):
     ext = os.path.splitext(path)[1]
     ext = ext.lower()
-    if ext in ['.jpg','.png','.jpeg','.bmp']:
+    if ext in ['.jpg','.png','.jpeg','.bmp','.heif','.webp','.tiff','.tif']:
         return True
     else:
         return False
@@ -38,7 +38,7 @@ def is_img(path):
 def is_video(path):
     ext = os.path.splitext(path)[1]
     ext = ext.lower()
-    if ext in ['.mp4','.flv','.avi','.mov','.mkv','.wmv','.rmvb','.mts','.3gp']:
+    if ext in ['.mp4','.flv','.avi','.mov','.mkv','.wmv','.rmvb','.mts','.3gp','.ts']:
         return True
     else:
         return False
