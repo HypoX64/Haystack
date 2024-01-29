@@ -53,10 +53,11 @@ def loadtxt(path):
 
 def makedirs(path):
     if os.path.isdir(path):
-        print(path,'existed')
+        # print(path,'existed')
+        pass
     else:
         os.makedirs(path)
-        print('makedir:',path)
+        # print('makedir:',path)
 
 def clean_tempfiles(tmp_init=True):
     if os.path.isdir('./tmp'):   
