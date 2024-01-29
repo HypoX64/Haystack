@@ -139,6 +139,7 @@ parser.add_argument("--max_rate_l2",type=float,default=0.005,help="max_bit_rate 
 parser.add_argument("--max_size",type=int,default=9999,help="if video min(h,w) >max_size, resize it to 1/2")
 
 parser.add_argument("--r",type=str,default='',help="")
+parser.add_argument("--preset",type=str,default='veryfast',help="")
 parser.add_argument("--crf",type=str,default='23',help="")
 parser.add_argument("--vcodec",type=str,default='libx265',help="libx265 | libx264 | av1")
 parser.add_argument("--acodec",type=str,default='aac',help="aac | copy")
@@ -229,7 +230,6 @@ print('Begin ecodec...')
 # makedirs(opt.output)
 
 for path in tqdm(deal_list):
-    time.sleep(1)
     originalstorage += (os.path.getsize(path)/(1024*1024*1024))
     if path[0] in ['/','.']:
         save_path = os.path.join(opt.output,path[1:])
@@ -257,7 +257,8 @@ for path in tqdm(deal_list):
             '-acodec',opt.acodec,
             ]
     if opt.vcodec in ['libx265','libx264']:
-        args+=['-preset','veryfast']
+        args+=['-preset',opt.preset]
+    args+=['-vsync','2']
     if opt.more != '':
         args+=[opt.more]
     if (deal_list[path]['need_resize']):
@@ -285,6 +286,7 @@ for path in tqdm(deal_list):
     storage = round(os.path.getsize(save_path)/(1024*1024*1024),3)
     deal_list[path]['out_storage'] = storage
     finalstorage += storage
+    time.sleep(1)
     
     # mv
     if opt.cover:
