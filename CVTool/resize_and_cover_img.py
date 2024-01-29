@@ -170,24 +170,27 @@ befor_img_num = len(img_paths)
 deal_list = {}
 print('Reading image info...')
 for path in tqdm(img_paths):
-    md5 = get_md5_from_file(path)
-    if md5 in image_processed_infos and not opt.no_json:
-        continue
-    metadata = get_image_metadata(path)
-    if metadata['storage'] < opt.thr_storage:
-        image_processed_infos[md5] = metadata
-        continue
-    if metadata['bpp'] < opt.max_bpp and min(metadata['size']) < opt.max_size:
-        image_processed_infos[md5] = metadata
-        continue
-    deal_list[path] = {
-        'size' : '{}x{}'.format(metadata['size'][0],metadata['size'][1]),
-        'storage': metadata['storage'],
-        'bpp': metadata['bpp'],
-        'cmd':['-quality',str(opt.quality)]
-    }
-    if min(metadata['size']) > opt.max_size:
-        deal_list[path]['cmd']+= ['-resize','{}x{}'.format(metadata['size'][0]//2,metadata['size'][1]//2)]
+    try:
+        md5 = get_md5_from_file(path)
+        if md5 in image_processed_infos and not opt.no_json:
+            continue
+        metadata = get_image_metadata(path)
+        if metadata['storage'] < opt.thr_storage:
+            image_processed_infos[md5] = metadata
+            continue
+        if metadata['bpp'] < opt.max_bpp and min(metadata['size']) < opt.max_size:
+            image_processed_infos[md5] = metadata
+            continue
+        deal_list[path] = {
+            'size' : '{}x{}'.format(metadata['size'][0],metadata['size'][1]),
+            'storage': metadata['storage'],
+            'bpp': metadata['bpp'],
+            'cmd':['-quality',str(opt.quality)]
+        }
+        if min(metadata['size']) > opt.max_size:
+            deal_list[path]['cmd']+= ['-resize','{}x{}'.format(metadata['size'][0]//2,metadata['size'][1]//2)]
+    except:
+        print('cannot get image infos from: {}'.format(path) )
 
 write_json(json_path,image_processed_infos)
 
@@ -213,13 +216,13 @@ def process_one(path,deal_infos):
     # basename = get_filename_without_extension(path)
     tmp_path = os.path.join(os.path.dirname(path),get_filename_without_extension(path)+'_tmpfh349s.heif')
     save_path = tmp_path.replace('_tmpfh349s.heif','.heif')
-    args = ['convert',path] + deal_infos['cmd']+ [tmp_path]
+    args = ['convert','"{}"'.format(path)] + deal_infos['cmd']+ ['"'+tmp_path+'"']
     run(args)
     after_size = getsize_as_mb(tmp_path)
     
     if after_size < deal_infos['storage']*opt.cover_thr:
-        os.system('rm {}'.format(path))
-        os.system('mv {} {}'.format(tmp_path,save_path))
+        os.system('rm "{}"'.format(path))
+        os.system('mv "{}" "{}"'.format(tmp_path,save_path))
         data_queue.put(
             {
                 'before':deal_infos['storage'],
@@ -231,7 +234,7 @@ def process_one(path,deal_infos):
             }
         )
     else:
-        os.system('rm {}'.format(tmp_path))
+        os.system('rm "{}"'.format(tmp_path))
         data_queue.put(
             {
                 'before':deal_infos['storage'],

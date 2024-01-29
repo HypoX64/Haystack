@@ -318,42 +318,6 @@ for path in tqdm(deal_list):
                 run(args)
         except:
             pass
-    
-
-# if opt.cover:
-#     print('Overwrite the origin video...')
-#     for path in deal_list:
-#         new_path = deal_list[path]['save_path']
-#         try:
-#             if deal_list[path]['out_storage']/deal_list[path]['storage']<opt.cover_thr:
-#                 # update json
-#                 md5_value = get_md5_from_file(new_path)
-#                 try:
-#                     fps,duration,height,width,bit_rate,codec_name = get_video_infos(new_path)
-#                 except:
-#                     print('failed to get infos:',new_path)
-#                 video_processed_infos[md5_value] = {
-#                     'name':os.path.basename(new_path),
-#                     'fps':round(fps,2),
-#                     'duration':round(duration,1),
-#                     'size':str(width)+'x'+str(height),
-#                     'bit_rate':str(bit_rate)+'kbps',
-#                     'codec_name':codec_name,
-#                     'storage':storage
-#                 }
-#                 video_processed_infos['easy_processed'][os.path.join(os.path.split(path)[0],os.path.basename(new_path))]=1
-                
-#                 # move and del
-#                 args = ['rm -r ','"'+path+'"']
-#                 run(args)
-#                 args = ['mv','"'+new_path+'"','"'+os.path.split(path)[0]+'"']
-#                 run(args)
-#             else:
-#                 args = ['rm -r ','"'+new_path+'"']
-#                 run(args)
-#         except:
-#             pass
-#     # os.system('rm -r '+opt.output)
 
 write_json(json_path,video_processed_infos)
 
