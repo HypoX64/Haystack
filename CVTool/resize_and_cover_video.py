@@ -245,7 +245,7 @@ for path in tqdm(deal_list):
 
     deal_list[path]['save_path'] = save_path
     makedirs(os.path.split(save_path)[0])
-    ffmpeg = 'ffmpeg -y -vsync 0'
+    ffmpeg = 'ffmpeg -y'
     if opt.q:
         ffmpeg += ' -loglevel quiet'
     
