@@ -7,7 +7,9 @@ import sys
 import time
 
 # ffmpeg 3.4.6
-from tqdm import tqdm
+from tqdm import tqdm,auto
+from multiprocessing import Pool, Manager
+
 
 # ---------------------------------util-------------------------------
 
@@ -102,6 +104,12 @@ def write_json(json_path,dict_data):
     with open(json_path,'w') as f:
         json.dump(dict_data,f,indent=4,ensure_ascii=False)
 
+def get_size_from_dir(dir):
+    cmd = ['du -s "{}"'.format(dir)]
+    out_string = run(cmd,mode=1)
+    gb = int(out_string.split('\t')[0])/1024/1024
+    return gb
+
 # ---------------------------------ffmpeg-------------------------------
 def get_video_infos(videopath):
     args =  ['ffprobe -v quiet -print_format json -show_format -show_streams', '-i', '"'+videopath+'"']
@@ -135,16 +143,14 @@ parser.add_argument("--q", action='store_true', help='')
 parser.add_argument("--bin", type=str, default='',help='where is the ffmpeg /usr/local/bin/ /bin:/usr/bin:/usr/local/bin')
 parser.add_argument("--max_rate_l1",type=float,default=0.002,help="max_bit_rate  0.0020 -> 1080P 4147kbps")
 parser.add_argument("--max_rate_l2",type=float,default=0.005,help="max_bit_rate  0.0050 -> 1080P 10368kbps")
-
 parser.add_argument("--max_size",type=int,default=9999,help="if video min(h,w) >max_size, resize it to 1/2")
-
 parser.add_argument("--r",type=str,default='',help="")
 parser.add_argument("--preset",type=str,default='veryfast',help="")
 parser.add_argument("--crf",type=str,default='23',help="")
 parser.add_argument("--vcodec",type=str,default='libx265',help="libx265 | libx264 | av1")
 parser.add_argument("--acodec",type=str,default='aac',help="aac | copy")
-
 parser.add_argument("--more",type=str,default='',help="more parser like: -s 1920x1080 -pix_fmt yuv420p")
+parser.add_argument("--pool",type=int,default=1,help="")
 
 '''
  -f mp4
@@ -169,8 +175,7 @@ l2_codec_type = ['h265','hevc','av1']
 file_paths = Traversal(opt.dir)
 video_paths = is_videos(file_paths)
 befor_video_num = len(video_paths)
-originalstorage = 0
-finalstorage = 0
+originalstorage = get_size_from_dir(opt.dir)
 
 deal_list = {}
 print('Reading video info...')
@@ -227,24 +232,20 @@ if not opt.y:
         sys.exit(0)
 
 print('Begin ecodec...') 
-# makedirs(opt.output)
+makedirs(opt.output)
 
-for path in tqdm(deal_list):
-    originalstorage += (os.path.getsize(path)/(1024*1024*1024))
+def process_one_video(path,video_processed_infos):
     if path[0] in ['/','.']:
         save_path = os.path.join(opt.output,path[1:])
     elif path[0] in ['..']:
         save_path = os.path.join(opt.output,path[2:])
     else:
         save_path = os.path.join(opt.output,path)
-
     filepath,tempfilename = os.path.split(save_path)
     filename,extension = os.path.splitext(tempfilename)
-
     save_path = os.path.join(filepath,filename+'.mp4')  
-
-    deal_list[path]['save_path'] = save_path
     makedirs(os.path.split(save_path)[0])
+    
     ffmpeg = 'ffmpeg -y'
     if opt.q:
         ffmpeg += ' -loglevel quiet'
@@ -277,22 +278,20 @@ for path in tqdm(deal_list):
         except:
             duration = 0
             print('failed to get infos:',path)
-            continue
+            return
         if abs(deal_list[path]['duration']-duration)<1 :
             print('The video has been processed, skip...')
             run_flag = False
     if run_flag:    
         run(args)
-    storage = round(os.path.getsize(save_path)/(1024*1024*1024),3)
-    deal_list[path]['out_storage'] = storage
-    finalstorage += storage
+    processed_storage = round(os.path.getsize(save_path)/(1024*1024*1024),3)
     time.sleep(1)
     
     # mv
     if opt.cover:
-        new_path = deal_list[path]['save_path']
+        new_path = save_path
         try:
-            if deal_list[path]['out_storage']/deal_list[path]['storage']<opt.cover_thr:
+            if processed_storage/deal_list[path]['storage']<opt.cover_thr:
                 # update json
                 md5_value = get_md5_from_file(new_path)
                 try:
@@ -320,6 +319,25 @@ for path in tqdm(deal_list):
                 run(args)
         except:
             pass
+    return
+
+def mycallback(arg):
+    '''get the image data and update pbar'''
+    pbar.update(1)
+    time.sleep(0.1)
+
+pbar = tqdm(total=len(deal_list))
+
+pool = Pool(opt.pool)
+with Manager() as manager:
+    video_processed_infos = manager.dict(video_processed_infos)
+    for i,path in enumerate(deal_list):
+        pool.apply_async(process_one_video, args=(path,video_processed_infos),callback=mycallback)
+    pool.close()
+    pool.join()
+    video_processed_infos = dict(video_processed_infos)
+time.sleep(1)
+pbar.close()
 
 write_json(json_path,video_processed_infos)
 
@@ -329,6 +347,7 @@ if after_video_num != befor_video_num:
     print('befor_video_num:',befor_video_num)
     print('after_video_num:',after_video_num)
 
-print('Original Size:%.2fGB'%originalstorage,
-      ' Final Size:%.2fGB'%finalstorage,
-      ' Reduce:%.2f'%((originalstorage-finalstorage)/originalstorage*100)+'%')
+finalstorage = get_size_from_dir(opt.dir)
+print('Original Size:%.3fGB'%originalstorage,
+      ' Final Size:%.3fGB'%finalstorage,
+      ' Reduce:%.3f'%((originalstorage-finalstorage)/originalstorage*100)+'%')
