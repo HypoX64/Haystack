@@ -188,18 +188,17 @@ for path in tqdm(video_paths):
             except:
                 print('failed to get infos:',path)
                 continue
+            
+            is_need_deal = False
+            
             isresize = False
             if min(height,width)>opt.max_size:
                 isresize = True
             storage = round(os.path.getsize(path)/(1024*1024*1024),3)
             
-            is_need_deal = False
-            if (codec_name not in l2_codec_type) and (bit_rate>height*width*opt.max_rate_l1) and storage>0.01:
-                deal_list[path] = {'fps':round(fps,2),'duration':round(duration,1),'size':str(width)+'x'+str(height),
-                                'bit_rate':str(bit_rate)+'kbps','codec':codec_name,'need_resize':isresize,'storage':storage}
-                is_need_deal = True
-        
-            if  codec_name in l2_codec_type and bit_rate>height*width*opt.max_rate_l2 and storage>0.01:
+            if ((codec_name not in l2_codec_type) and (bit_rate>height*width*opt.max_rate_l1) or \
+                (codec_name in l2_codec_type and bit_rate>height*width*opt.max_rate_l2) or \
+                isresize) and storage>0.01:
                 deal_list[path] = {'fps':round(fps,2),'duration':round(duration,1),'size':str(width)+'x'+str(height),
                                 'bit_rate':str(bit_rate)+'kbps','codec':codec_name,'need_resize':isresize,'storage':storage}
                 is_need_deal = True
