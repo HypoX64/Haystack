@@ -696,6 +696,7 @@ conda install xxx -c conda-forge
 ```bash
 conda remove -n <env name> --all #删除该环境所有包
 conda clean -a #清空anaconda pkg缓存
+pip cache purge #清空pip pkg缓存
 ```
 ### 换源
 ```bash

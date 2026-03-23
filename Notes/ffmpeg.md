@@ -56,6 +56,9 @@ source ~/.bashrc
 
 -loglevel quiet #有时候需要隐蔽的执行ffmpeg不希望输出任何日志，提示。
 PATH=/bin:/usr/bin:/usr/local/bin #指定路径
+
+# 水平拼接多个视频
+ffmpeg -i input1.mp4 -i input2.mp4 -i input3.mp4 -filter_complex "[0:v][1:v][2:v]hstack=inputs=3" -c:v libx264 -crf 23 -preset fast output.mp4
 ```
 
 ### 统计总帧数

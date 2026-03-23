@@ -38,7 +38,8 @@ def Traversal(filedir):
 def is_img(path):
     ext = os.path.splitext(path)[1]
     ext = ext.lower()
-    if ext in ['.jpg','.png','.jpeg','.bmp','.heif','.webp','.tiff','.tif']:
+    # if ext in ['.jpg','.png','.jpeg','.bmp','.heif','.webp','.tiff','.tif']:
+    if ext in ['.jpg','.png','.jpeg','.bmp','.webp','.tiff','.tif']:
         return True
     else:
         return False
